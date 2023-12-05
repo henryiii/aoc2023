@@ -84,11 +84,31 @@ fn accumulator(acc: u32, line: &str) -> u32 {
     }
 }
 
+fn total_power(line: &str) -> u32 {
+    let (_, all_meas) = measurements(line);
+    let total = all_meas.iter().fold(
+        Meas {
+            ..Default::default()
+        },
+        |acc, x| Meas {
+            red: std::cmp::max(acc.red, x.red),
+            green: std::cmp::max(acc.green, x.green),
+            blue: std::cmp::max(acc.blue, x.blue),
+        },
+    );
+    total.red * total.green * total.blue
+}
+
 fn main() {
     let file = std::fs::File::open("resources/02/input.txt").unwrap();
     let lines = std::io::BufReader::new(file).lines();
     let sum = lines.fold(0, |acc, x| accumulator(acc, &x.unwrap()));
+
+    let file = std::fs::File::open("resources/02/input.txt").unwrap();
+    let lines = std::io::BufReader::new(file).lines();
+    let pow = lines.fold(0, |acc, x| acc + total_power(&x.unwrap()));
     println!("Sum: {sum}");
+    println!("Total power: {pow}");
 }
 
 #[cfg(test)]
@@ -108,5 +128,12 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green";
         assert_eq!(full_total, 15);
         let sum = lines.fold(0, |acc, x| accumulator(acc, x));
         assert_eq!(sum, 8);
+    }
+
+    #[test]
+    fn test_02b() {
+        let lines = INPUT.lines();
+        let pow = lines.fold(0, |acc, x| acc + total_power(x));
+        assert_eq!(pow, 2286);
     }
 }
