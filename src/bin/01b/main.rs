@@ -2,16 +2,33 @@
 
 use std::io::prelude::*;
 
+const NUMS: &[&str] = &[
+    "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+];
+
 fn index_to_int(line: &[u8], value: usize) -> Option<u32> {
     let result = line[value] as char;
-    result.to_digit(10)
+    match result {
+        '0'..='9' => result.to_digit(10),
+        'z' | 'o' | 't' | 'f' | 's' | 'e' | 'n' => {
+            for (i, num) in NUMS.iter().enumerate() {
+                let bnum = num.as_bytes();
+                let end = value + bnum.len();
+                if line.len() >= end && *bnum == line[value..end] {
+                    return Some(i as u32);
+                }
+            }
+            None
+        }
+        _ => None,
+    }
 }
 
 fn str_to_pair(line: &str) -> (u32, u32) {
     let bytes_arr = line.as_bytes();
     let mut iter = (0..bytes_arr.len()).filter_map(|item| index_to_int(bytes_arr, item));
     let first = iter.next().unwrap();
-    (first, iter.last().unwrap_or(first))
+    (first, iter.next_back().unwrap_or(first))
 }
 
 fn pair_to_int(pair: (u32, u32)) -> u32 {
@@ -23,4 +40,26 @@ fn main() {
     let lines = std::io::BufReader::new(file).lines();
     let sum = lines.fold(0, |x, line| x + pair_to_int(str_to_pair(&line.unwrap())));
     println!("Sum: {sum}");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_01b() {
+        let lines = &[
+            "two1nine",
+            "eightwothree",
+            "abcone2threexyz",
+            "xtwone3four",
+            "4nineeightseven2",
+            "zoneight234",
+            "7pqrstsixteen",
+        ];
+        let sum = lines
+            .iter()
+            .fold(0, |x, line| x + pair_to_int(str_to_pair(line)));
+        assert_eq!(sum, 281);
+    }
 }

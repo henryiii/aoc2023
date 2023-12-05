@@ -19,3 +19,17 @@ fn main() {
     let sum = lines.fold(0, |x, line| x + number_line(&line.unwrap()).unwrap());
     println!("Sum: {sum}");
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_01() {
+        let lines = &["1abc2", "pqr3stu8vwx", "a1b2c3d4e5f", "treb7uchet"];
+        let sum = lines
+            .iter()
+            .fold(0, |x, line| x + number_line(line).unwrap());
+        assert_eq!(sum, 142);
+    }
+}
