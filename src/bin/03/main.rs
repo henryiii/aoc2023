@@ -79,7 +79,7 @@ impl NumberGrid {
 }
 
 fn main() {
-    let file = std::fs::File::open("resources/03/input.txt").unwrap();
+    let file = std::fs::File::open("input/03.txt").unwrap();
     let lines = std::io::BufReader::new(file).lines();
     let grid = NumberGrid::from_lines(lines.map(|x| x.unwrap()));
     let nums = grid.filtered_numbers();

@@ -100,11 +100,11 @@ fn total_power(line: &str) -> u32 {
 }
 
 fn main() {
-    let file = std::fs::File::open("resources/02/input.txt").unwrap();
+    let file = std::fs::File::open("input/02.txt").unwrap();
     let lines = std::io::BufReader::new(file).lines();
     let sum = lines.fold(0, |acc, x| accumulator(acc, &x.unwrap()));
 
-    let file = std::fs::File::open("resources/02/input.txt").unwrap();
+    let file = std::fs::File::open("input/02.txt").unwrap();
     let lines = std::io::BufReader::new(file).lines();
     let pow = lines.fold(0, |acc, x| acc + total_power(&x.unwrap()));
     println!("Sum: {sum}");

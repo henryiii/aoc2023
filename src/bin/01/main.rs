@@ -14,7 +14,7 @@ fn number_line(line: &str) -> Option<u32> {
 }
 
 fn main() {
-    let file = std::fs::File::open("resources/01/input.txt").unwrap();
+    let file = std::fs::File::open("input/01.txt").unwrap();
     let lines = std::io::BufReader::new(file).lines();
     let sum = lines.fold(0, |x, line| x + number_line(&line.unwrap()).unwrap());
     println!("Sum: {sum}");
