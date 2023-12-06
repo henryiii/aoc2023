@@ -11,7 +11,7 @@ fn adjacent(x: usize, y: usize, cx: usize, cy: usize, sz: usize) -> bool {
 }
 
 impl NumberGrid {
-    fn from_lines(lines: impl Iterator<Item = String>) -> NumberGrid {
+    fn from_lines(lines: impl Iterator<Item = String>) -> Self {
         let mut numbers = Vec::new();
         let mut chars = Vec::new();
         let mut gears = Vec::new();
@@ -35,7 +35,7 @@ impl NumberGrid {
             }
         }
 
-        NumberGrid {
+        Self {
             chars,
             gears,
             numbers,
