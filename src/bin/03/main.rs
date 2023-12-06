@@ -2,18 +2,27 @@ use std::io::prelude::*;
 
 struct NumberGrid {
     chars: Vec<(usize, usize)>,
+    gears: Vec<(usize, usize)>,
     numbers: Vec<(usize, usize, usize, u32)>,
+}
+
+fn adjacent(x: usize, y: usize, cx: usize, cy: usize, sz: usize) -> bool {
+    (y == cy || y == cy + 1 || y + 1 == cy) && x <= cx + 1 && cx < x + 1 + sz
 }
 
 impl NumberGrid {
     fn from_lines(lines: impl Iterator<Item = String>) -> NumberGrid {
         let mut numbers = Vec::new();
         let mut chars = Vec::new();
+        let mut gears = Vec::new();
         for (y, line) in lines.enumerate() {
             let bytes = line.as_bytes();
             for (x, c) in bytes.iter().enumerate() {
                 if !c.is_ascii_digit() && *c != b'.' {
                     chars.push((y, x));
+                    if *c == b'*' {
+                        gears.push((y, x));
+                    }
                 } else if c.is_ascii_digit() && (x == 0 || !bytes[x - 1].is_ascii_digit()) {
                     let mut end = x + 1;
                     while end < bytes.len() && bytes[end].is_ascii_digit() {
@@ -26,18 +35,44 @@ impl NumberGrid {
             }
         }
 
-        NumberGrid { chars, numbers }
+        NumberGrid {
+            chars,
+            gears,
+            numbers,
+        }
     }
 
     fn filtered_numbers(&self) -> Vec<&(usize, usize, usize, u32)> {
         self.numbers
             .iter()
             .filter(|(y, x, sz, _)| {
-                self.chars.iter().any(|(cy, cx)| {
-                    (*y == *cy || *y == *cy + 1 || *y + 1 == *cy)
-                        && *x <= *cx + 1
-                        && *cx < *x + 1 + *sz
-                })
+                self.chars
+                    .iter()
+                    .any(|(cy, cx)| adjacent(*x, *y, *cx, *cy, *sz))
+            })
+            .collect()
+    }
+
+    fn gear_ratios(&self) -> Vec<u32> {
+        self.gears
+            .iter()
+            .filter_map(|(cy, cx)| {
+                let numbers: Vec<u32> = self
+                    .numbers
+                    .iter()
+                    .filter_map(|(y, x, sz, num)| {
+                        if adjacent(*x, *y, *cx, *cy, *sz) {
+                            Some(*num)
+                        } else {
+                            None
+                        }
+                    })
+                    .collect();
+                if numbers.len() == 2 {
+                    Some(numbers[0] * numbers[1])
+                } else {
+                    None
+                }
             })
             .collect()
     }
@@ -50,9 +85,10 @@ fn main() {
     let nums = grid.filtered_numbers();
     let sum: u32 = nums.iter().map(|x| x.3).sum();
 
-    let vals: Vec<u32> = nums.iter().map(|x| x.3).collect();
-    println!("Vals: {vals:?}");
     println!("Sum: {sum}");
+
+    let ratios: u32 = grid.gear_ratios().iter().sum();
+    println!("Ratios: {ratios:?}");
 }
 
 #[cfg(test)]
@@ -91,5 +127,8 @@ mod tests {
 
         let sum: u32 = nums.iter().map(|x| x.3).sum();
         assert_eq!(sum, 4361);
+
+        let ratios: u32 = grid.gear_ratios().iter().sum();
+        assert_eq!(ratios, 467835);
     }
 }
