@@ -1,16 +1,39 @@
 use std::io::prelude::*;
 
-#[derive(Debug)]
-struct Mapper {
+#[cfg(feature = "progressbar")]
+use indicatif::ProgressBar;
+
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
+struct Range {
     from: u64,
     to: u64,
-    size: u64,
+}
+
+impl Range {
+    fn new(from: u64, to: u64) -> Self {
+        assert!(from <= to);
+        Self { from, to }
+    }
+
+    fn from_size(from: u64, size: u64) -> Self {
+        Self::new(from, from + size)
+    }
+
+    fn contains(&self, value: u64) -> bool {
+        self.from <= value && value < self.to
+    }
+}
+
+#[derive(Debug)]
+struct Mapper {
+    range: Range,
+    to: u64,
 }
 
 impl Mapper {
     fn convert(&self, value: u64) -> Option<u64> {
-        if self.from <= value && value < self.from + self.size {
-            Some(value - self.from + self.to)
+        if self.range.contains(value) {
+            Some(value - self.range.from + self.to)
         } else {
             None
         }
@@ -88,11 +111,20 @@ where
             let to = parts.next().unwrap().parse::<u64>().unwrap();
             let from = parts.next().unwrap().parse::<u64>().unwrap();
             let size = parts.next().unwrap().parse::<u64>().unwrap();
-            mappers.mappers.push(Mapper { from, to, size });
+            mappers.mappers.push(Mapper {
+                range: Range::new(from, from + size),
+                to,
+            });
         }
         all_mappers.mappers.push(mappers);
     }
     (seeds, all_mappers)
+}
+
+fn seeds_as_ranges_brute_force(seeds: &[u64]) -> impl Iterator<Item = u64> + '_ {
+    let pairs = seeds.iter().step_by(2).zip(seeds.iter().skip(1).step_by(2));
+    let seeds = pairs.map(|(from, len)| Range::from_size(*from, *len));
+    seeds.flat_map(|r| (r.from)..(r.to))
 }
 
 fn main() {
@@ -102,6 +134,17 @@ fn main() {
     let (seeds, all_mappers) = read(lines);
     let min = seeds.iter().map(|x| all_mappers.convert(*x)).min().unwrap();
     println!("Min: {min}");
+
+    let seed_iter = seeds_as_ranges_brute_force(&seeds);
+
+    #[cfg(feature = "progressbar")]
+    let pb = ProgressBar::new(seeds.iter().skip(1).step_by(2).sum());
+    #[cfg(feature = "progressbar")]
+    let seed_iter = pb.wrap_iter(seed_iter);
+
+    let min = seed_iter.map(|x| all_mappers.convert(x)).min().unwrap();
+
+    println!("Min assuming ranges: {min}");
 }
 
 #[cfg(test)]
@@ -144,30 +187,39 @@ humidity-to-location map:
 56 93 4";
 
     #[test]
-    fn test() {
+    fn test_05() {
         let lines: Vec<&str> = INPUT.lines().collect();
-        let (seeds, mappers) = read(lines.iter().map(|x| x.to_string()));
-        println!("{mappers:?}");
+        let (seeds, all_mappers) = read(lines.iter().map(|x| x.to_string()));
+        println!("{all_mappers:?}");
         assert_eq!(seeds, vec![79, 14, 55, 13]);
-        assert_eq!(mappers.mappers.len(), 7);
-        assert_eq!(mappers.mappers[0].convert(79), 81);
-        assert_eq!(mappers.mappers[0].convert(14), 14);
-        assert_eq!(mappers.mappers[0].convert(55), 57);
-        assert_eq!(mappers.mappers[0].convert(13), 13);
+        assert_eq!(all_mappers.mappers.len(), 7);
+        assert_eq!(all_mappers.mappers[0].convert(79), 81);
+        assert_eq!(all_mappers.mappers[0].convert(14), 14);
+        assert_eq!(all_mappers.mappers[0].convert(55), 57);
+        assert_eq!(all_mappers.mappers[0].convert(13), 13);
 
-        assert_eq!(mappers.mappers[1].convert(81), 81);
-        assert_eq!(mappers.mappers[2].convert(81), 81);
-        assert_eq!(mappers.mappers[3].convert(81), 74);
-        assert_eq!(mappers.mappers[4].convert(74), 78);
-        assert_eq!(mappers.mappers[5].convert(78), 78);
-        assert_eq!(mappers.mappers[6].convert(78), 82);
+        assert_eq!(all_mappers.mappers[1].convert(81), 81);
+        assert_eq!(all_mappers.mappers[2].convert(81), 81);
+        assert_eq!(all_mappers.mappers[3].convert(81), 74);
+        assert_eq!(all_mappers.mappers[4].convert(74), 78);
+        assert_eq!(all_mappers.mappers[5].convert(78), 78);
+        assert_eq!(all_mappers.mappers[6].convert(78), 82);
 
-        assert_eq!(mappers.convert(79), 82);
-        assert_eq!(mappers.convert(14), 43);
-        assert_eq!(mappers.convert(55), 86);
-        assert_eq!(mappers.convert(13), 35);
+        assert_eq!(all_mappers.convert(79), 82);
+        assert_eq!(all_mappers.convert(14), 43);
+        assert_eq!(all_mappers.convert(55), 86);
+        assert_eq!(all_mappers.convert(13), 35);
 
-        let min = seeds.iter().map(|x| mappers.convert(*x)).min().unwrap();
+        let min = seeds.iter().map(|x| all_mappers.convert(*x)).min().unwrap();
         assert_eq!(min, 35);
+    }
+
+    #[test]
+    fn test_05b_brute_force() {
+        let lines: Vec<&str> = INPUT.lines().collect();
+        let (seeds, all_mappers) = read(lines.iter().map(|x| x.to_string()));
+        let all_seeds = seeds_as_ranges_brute_force(&seeds);
+        let min = all_seeds.map(|x| all_mappers.convert(x)).min().unwrap();
+        assert_eq!(min, 46);
     }
 }

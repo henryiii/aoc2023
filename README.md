@@ -26,5 +26,7 @@ Download the input files to `input/<number>.txt`. For example, `input/01.txt`.
 Use:
 
 ```bash
-cargo run --bin 01
+cargo run -r --bin 01
 ```
+
+(`-r` for release mode highly recommended for `05`!)
