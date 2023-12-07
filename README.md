@@ -29,4 +29,4 @@ Use:
 cargo run -r --bin 01
 ```
 
-(`-r` for release mode highly recommended for `05`!)
+(`-r` for release mode highly recommended for `05` and `06`!)
