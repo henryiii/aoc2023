@@ -1,6 +1,6 @@
 # Advent of Code 2023 in Rust
 
-I'm trying the advent of code in Rust this year to learn Rust.
+I'm trying the [advent of code](https://adventofcode.com/2023) in Rust this year to learn Rust.
 
 ## Formatting and linting
 
