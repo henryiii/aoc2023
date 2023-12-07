@@ -3,7 +3,6 @@ use std::io::prelude::*;
 #[cfg(feature = "progressbar")]
 use indicatif::ProgressBar;
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone)]
 struct Range {
     from: u64,
     to: u64,
@@ -24,7 +23,6 @@ impl Range {
     }
 }
 
-#[derive(Debug)]
 struct Mapper {
     range: Range,
     to: u64,
@@ -40,7 +38,6 @@ impl Mapper {
     }
 }
 
-#[derive(Debug)]
 struct Mappers {
     mappers: Vec<Mapper>,
 }
@@ -62,7 +59,6 @@ impl Mappers {
     }
 }
 
-#[derive(Debug)]
 struct AllMappers {
     mappers: Vec<Mappers>,
 }
@@ -190,7 +186,6 @@ humidity-to-location map:
     fn test_05() {
         let lines: Vec<&str> = INPUT.lines().collect();
         let (seeds, all_mappers) = read(lines.iter().map(|x| x.to_string()));
-        println!("{all_mappers:?}");
         assert_eq!(seeds, vec![79, 14, 55, 13]);
         assert_eq!(all_mappers.mappers.len(), 7);
         assert_eq!(all_mappers.mappers[0].convert(79), 81);

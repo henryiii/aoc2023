@@ -12,20 +12,14 @@ impl Race {
 
     fn ways_to_win(&self) -> u64 {
         (0..(self.time))
-            .map(|a_time| {
-                if a_time * (self.time - a_time) > self.distance {
-                    1
-                } else {
-                    0
-                }
-            })
-            .sum::<u64>()
+            .map(|a_time| (a_time * (self.time - a_time) > self.distance) as u64)
+            .sum()
     }
 }
 
 fn get_arr(string: &str) -> Vec<u64> {
     string
-        .split(":")
+        .split(':')
         .last()
         .unwrap()
         .trim()
@@ -52,8 +46,8 @@ fn main() {
     let ways_to_win: u64 = races.iter().map(Race::ways_to_win).product();
     println!("Ways to win: {}", ways_to_win);
 
-    let distance_joined: u64 = get_arr(&distance_str.replace(" ", ""))[0];
-    let time_joined: u64 = get_arr(&time_str.replace(" ", ""))[0];
+    let distance_joined: u64 = get_arr(&distance_str.replace(' ', ""))[0];
+    let time_joined: u64 = get_arr(&time_str.replace(' ', ""))[0];
     let ways_to_win = Race::new(time_joined, distance_joined).ways_to_win();
     println!("Joined ways to win: {}", ways_to_win);
 }

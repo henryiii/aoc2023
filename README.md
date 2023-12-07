@@ -30,3 +30,15 @@ cargo run -r --bin 01
 ```
 
 (`-r` for release mode highly recommended for `05` and `06`!)
+
+
+## Notes
+
+This is mostly one file per project. I'm not worrying about visibility or nice
+error handling since these are one-shot "scripts". I even played with the script
+feature in the nightlies (`01` supports it), but I wanted `cargo fmt` and
+`cargo clippy` (and then `cargo test`), so I went with the classic project-based
+approach.
+
+Features used in each vary. For example, `05` has an optional progress bar
+(opt-out).
