@@ -162,7 +162,7 @@ QQQJA 483";
             .enumerate()
             .map(|(rank, hand)| (rank as u64 + 1) * hand.bid)
             .sum();
-        assert_eq!(score, 5909)
+        assert_eq!(score, 5905)
     }
 
     #[test]

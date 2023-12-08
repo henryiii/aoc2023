@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 indicatif = {version = "*", optional=true}
+num = "*"
 
 [features]
 default = ["progressbar"]
