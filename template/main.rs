@@ -13,7 +13,7 @@ mod tests {
     use super::*;
 
     const INPUT: &str = "\
-"
+";
 
     #[test]
     fn test() {

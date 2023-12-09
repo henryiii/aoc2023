@@ -1,6 +1,9 @@
 # Advent of Code 2023 in Rust
 
-I'm trying the [advent of code](https://adventofcode.com/2023) in Rust this year to learn Rust.
+I'm trying the [advent of code](https://adventofcode.com/2023) in Rust this
+year to learn Rust. I'm not trying to be fast and place on the leaderboards
+(which also require working at midnight, which I'm mostly not interested in
+doing), I'm trying to be somewhat elegant and learn new things.
 
 ## Formatting and linting
 
@@ -41,4 +44,4 @@ feature in the nightlies (`01` supports it), but I wanted `cargo fmt` and
 approach.
 
 Features used in each vary. For example, `05` has an optional progress bar
-(opt-out).
+(opt-out). `08` uses a crate.
