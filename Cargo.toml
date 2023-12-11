@@ -7,6 +7,9 @@ edition = "2021"
 indicatif = {version = "*", optional=true}
 num = "*"
 grid = "*"
+log = "*"
+env_logger = "*"
+test-log = "*"
 
 [features]
 default = ["progressbar"]
