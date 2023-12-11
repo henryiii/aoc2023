@@ -1,11 +1,13 @@
-use std::io::prelude::*;
+#![warn(clippy::all, clippy::pedantic)]
 
+fn compute(text: &str) -> i64 {
+    0
+}
 
 fn main() {
-    let file = std::fs::File::open("input/06.txt").unwrap();
-    let lines_res = std::io::BufReader::new(file).lines();
-    let mut lines = lines_res.map(|x| x.unwrap());
-    println!("");
+    let text = std::fs::read_to_string("input/11.txt").unwrap();
+    let result = compute(&text);
+    println!("Results = {result}");
 }
 
 #[cfg(test)]
@@ -17,6 +19,7 @@ mod tests {
 
     #[test]
     fn test() {
-        assert_eq!(1, 1);
+        let result = compute(INPUT);
+        assert_eq!(result, 1);
     }
 }
