@@ -1,3 +1,5 @@
+#![warn(clippy::all, clippy::pedantic)]
+
 use std::io::prelude::*;
 
 struct NumberGrid {
@@ -81,7 +83,7 @@ impl NumberGrid {
 fn main() {
     let file = std::fs::File::open("input/03.txt").unwrap();
     let lines = std::io::BufReader::new(file).lines();
-    let grid = NumberGrid::from_lines(lines.map(|x| x.unwrap()));
+    let grid = NumberGrid::from_lines(lines.map(std::result::Result::unwrap));
     let nums = grid.filtered_numbers();
     let sum: u32 = nums.iter().map(|x| x.3).sum();
 

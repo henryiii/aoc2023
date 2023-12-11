@@ -1,4 +1,5 @@
 #!/usr/bin/env cargo -Zscript
+#![warn(clippy::all, clippy::pedantic)]
 
 use std::io::prelude::*;
 
@@ -15,7 +16,7 @@ fn index_to_int(line: &[u8], value: usize) -> Option<u32> {
                 let bnum = num.as_bytes();
                 let end = value + bnum.len();
                 if line.len() >= end && *bnum == line[value..end] {
-                    return Some(i as u32);
+                    return Some(u32::try_from(i).unwrap());
                 }
             }
             None

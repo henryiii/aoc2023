@@ -1,3 +1,5 @@
+#![warn(clippy::all, clippy::pedantic)]
+
 use std::io::prelude::*;
 
 struct Race {
@@ -12,7 +14,7 @@ impl Race {
 
     fn ways_to_win(&self) -> u64 {
         (0..(self.time))
-            .map(|a_time| (a_time * (self.time - a_time) > self.distance) as u64)
+            .map(|a_time| u64::from(a_time * (self.time - a_time) > self.distance))
             .sum()
     }
 }
@@ -31,7 +33,7 @@ fn get_arr(string: &str) -> Vec<u64> {
 fn main() {
     let file = std::fs::File::open("input/06.txt").unwrap();
     let lines_res = std::io::BufReader::new(file).lines();
-    let mut lines = lines_res.map(|x| x.unwrap());
+    let mut lines = lines_res.map(std::result::Result::unwrap);
     let time_str = lines.next().unwrap();
     let distance_str = lines.next().unwrap();
 
@@ -44,12 +46,12 @@ fn main() {
         .map(|(t, d)| Race::new(*t, *d))
         .collect();
     let ways_to_win: u64 = races.iter().map(Race::ways_to_win).product();
-    println!("Ways to win: {}", ways_to_win);
+    println!("Ways to win: {ways_to_win}");
 
     let distance_joined: u64 = get_arr(&distance_str.replace(' ', ""))[0];
     let time_joined: u64 = get_arr(&time_str.replace(' ', ""))[0];
     let ways_to_win = Race::new(time_joined, distance_joined).ways_to_win();
-    println!("Joined ways to win: {}", ways_to_win);
+    println!("Joined ways to win: {ways_to_win}");
 }
 
 #[cfg(test)]

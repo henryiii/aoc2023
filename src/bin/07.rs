@@ -1,3 +1,5 @@
+#![warn(clippy::all, clippy::pedantic)]
+
 use std::{collections::HashMap, io::prelude::*};
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Hash)]
@@ -49,7 +51,7 @@ impl Hand {
             acc
         });
         let mut counts: Vec<_> = counts.into_values().collect();
-        counts.sort();
+        counts.sort_unstable();
         counts.reverse();
         match counts.as_slice() {
             [5] => 6,
@@ -97,7 +99,7 @@ impl std::str::FromStr for Hand {
 fn main() {
     let file = std::fs::File::open("input/07.txt").unwrap();
     let lines_res = std::io::BufReader::new(file).lines();
-    let lines = lines_res.map(|x| x.unwrap());
+    let lines = lines_res.map(std::result::Result::unwrap);
     let mut hands: Vec<Hand> = lines.map(|x| x.parse().unwrap()).collect();
     hands.sort();
     let score: u64 = hands

@@ -1,3 +1,5 @@
+#![warn(clippy::all, clippy::pedantic)]
+
 use std::io::prelude::*;
 use std::str::FromStr;
 
@@ -39,7 +41,7 @@ impl Card {
     }
 
     fn score(&self) -> u32 {
-        let score = self.count_winning() as u32;
+        let score = u32::try_from(self.count_winning()).unwrap();
         if score == 0 {
             0
         } else {
@@ -49,7 +51,7 @@ impl Card {
 }
 
 fn card_count(cards: &[Card]) -> Vec<usize> {
-    let wins: Vec<usize> = cards.iter().map(|x| x.count_winning()).collect();
+    let wins: Vec<usize> = cards.iter().map(Card::count_winning).collect();
     let mut card_count: Vec<usize> = cards.iter().map(|_| 1).collect();
     for (n, win) in wins.iter().enumerate() {
         for w in (n + 1)..std::cmp::min(*win + n + 1, card_count.len()) {
@@ -63,7 +65,7 @@ fn main() {
     let file = std::fs::File::open("input/04.txt").unwrap();
     let lines = std::io::BufReader::new(file).lines();
     let cards: Vec<Card> = lines.map(|x| x.unwrap().parse().unwrap()).collect();
-    let score: u32 = cards.iter().map(|x| x.score()).sum();
+    let score: u32 = cards.iter().map(Card::score).sum();
     println!("Score: {score}");
     let count: usize = card_count(&cards).iter().sum();
     println!("Count: {count:?}");

@@ -1,4 +1,5 @@
 #!/usr/bin/env cargo -Zscript
+#![warn(clippy::all, clippy::pedantic)]
 
 use std::io::prelude::*;
 

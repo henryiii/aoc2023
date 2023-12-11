@@ -1,3 +1,6 @@
+#![warn(clippy::all, clippy::pedantic)]
+#![allow(clippy::similar_names)]
+
 use std::collections::HashMap;
 
 fn read(text: &str) -> (String, HashMap<String, (String, String)>) {
@@ -22,15 +25,13 @@ fn follow_directions(directions: &str, nodes: &HashMap<String, (String, String)>
         match direction {
             'L' => current_node = &nodes[current_node].0,
             'R' => current_node = &nodes[current_node].1,
-            _ => panic!("Invalid direction: {}", direction),
+            _ => panic!("Invalid direction: {direction}"),
         }
         count += 1;
         if current_node == "ZZZ" {
             break;
         }
-        if count > 100000 {
-            panic!("Infinite loop detected");
-        }
+        assert!(count <= 100_000, "Infinite loop detected");
     }
     count
 }
@@ -43,7 +44,7 @@ fn follow_directions_syml(directions: &str, nodes: &HashMap<String, (String, Str
         .filter(|x| x.ends_with('A'))
         .map(|x| &x[..])
         .collect();
-    println!("{:?}", current_nodes);
+    println!("{current_nodes:?}");
     for direction in directions.chars().cycle() {
         match direction {
             'L' => current_nodes.iter_mut().for_each(|x| *x = &nodes[*x].0),

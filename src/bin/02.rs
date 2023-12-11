@@ -1,3 +1,5 @@
+#![warn(clippy::all, clippy::pedantic)]
+
 use std::io::prelude::*;
 use std::ops::Add;
 
@@ -62,7 +64,7 @@ fn measurements(line: &str) -> (u32, Vec<Meas>) {
     (game_number, meas)
 }
 
-fn valid_measurements(max: Meas, all_meas: &[Meas]) -> bool {
+fn valid_measurements(max: &Meas, all_meas: &[Meas]) -> bool {
     all_meas
         .iter()
         .all(|x| max.red >= x.red && max.blue >= x.blue && max.green >= x.green)
@@ -71,7 +73,7 @@ fn valid_measurements(max: Meas, all_meas: &[Meas]) -> bool {
 fn accumulator(acc: u32, line: &str) -> u32 {
     let (game_number, all_meas) = measurements(line);
     if valid_measurements(
-        Meas {
+        &Meas {
             red: 12,
             green: 13,
             blue: 14,

@@ -1,3 +1,4 @@
+#![warn(clippy::all, clippy::pedantic)]
 use std::io::prelude::*;
 
 #[cfg(feature = "progressbar")]
@@ -126,7 +127,7 @@ fn seeds_as_ranges_brute_force(seeds: &[u64]) -> impl Iterator<Item = u64> + '_ 
 fn main() {
     let file = std::fs::File::open("input/05.txt").unwrap();
     let lines_res = std::io::BufReader::new(file).lines();
-    let lines = lines_res.map(|x| x.unwrap());
+    let lines = lines_res.map(std::result::Result::unwrap);
     let (seeds, all_mappers) = read(lines);
     let min = seeds.iter().map(|x| all_mappers.convert(*x)).min().unwrap();
     println!("Min: {min}");

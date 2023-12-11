@@ -1,3 +1,5 @@
+#![warn(clippy::all, clippy::pedantic)]
+
 fn read(input: &str) -> impl Iterator<Item = Vec<i64>> + '_ {
     input.lines().map(|line| {
         line.split_whitespace()
