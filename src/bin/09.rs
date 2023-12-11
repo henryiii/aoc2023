@@ -29,9 +29,9 @@ fn compute_previous(data: &[i64]) -> i64 {
 fn main() {
     let text = std::fs::read_to_string("input/09.txt").unwrap();
     let data: Vec<_> = read(&text).collect();
-    let forward_sum: i64 = data.iter().map(|x| compute_next(&x)).sum();
+    let forward_sum: i64 = data.iter().map(|x| compute_next(x)).sum();
     println!("Total forward: {forward_sum}");
-    let backward_sum: i64 = data.iter().map(|x| compute_previous(&x)).sum();
+    let backward_sum: i64 = data.iter().map(|x| compute_previous(x)).sum();
     println!("Total backward: {backward_sum}");
 }
 
