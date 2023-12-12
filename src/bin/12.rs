@@ -3,22 +3,22 @@
 
 extern crate test;
 
-fn compare_spaces(spaces: &[usize], ops: &[usize], start: &str) -> bool {
+fn compare_spaces(spaces: &[usize], ops: &[usize], conditions: &str) -> bool {
     let (next, mut value) = spaces
         .iter()
         .zip(ops.iter())
         .fold((0, true), |acc, (space, op)| {
             let next = acc.0 + space + op;
             let value = acc.1
-                && start.chars().skip(acc.0).take(*space).all(|c| c != '#')
-                && start
+                && conditions.chars().skip(acc.0).take(*space).all(|c| c != '#')
+                && conditions
                     .chars()
                     .skip(acc.0 + space)
                     .take(*op)
                     .all(|x| x != '.');
             (next, value)
         });
-    value &= start.chars().skip(next).all(|x| x != '#');
+    value &= conditions.chars().skip(next).all(|x| x != '#');
     value
 }
 
@@ -46,16 +46,16 @@ fn partition_next(max: usize, vals: &mut [usize]) -> bool {
     }
 }
 
-fn cmp_line(start: &str, ops: &[usize]) -> usize {
+fn cmp_line(conditions: &str, ops: &[usize]) -> usize {
     // This is the maximum consecutive space
-    let max_space: usize = start.len() - (ops.iter().sum::<usize>());
+    let max_space: usize = conditions.len() - (ops.iter().sum::<usize>());
     let num_spaces = ops.len() + 1;
     let mut spaces = vec![0; num_spaces];
     spaces[0] = max_space;
     let mut count = 0;
     while partition_next(max_space, &mut spaces) {
         if spaces.iter().skip(1).take(spaces.len() - 2).all(|x| *x > 0)
-            && compare_spaces(&spaces, ops, start)
+            && compare_spaces(&spaces, ops, conditions)
         {
             count += 1;
         }
@@ -65,17 +65,17 @@ fn cmp_line(start: &str, ops: &[usize]) -> usize {
 
 fn single_line(text: &str, n: usize) -> usize {
     let mut it = text.split_ascii_whitespace();
-    let start = it.next().unwrap();
-    let end: Vec<usize> = it
+    let conditions = it.next().unwrap();
+    let ops: Vec<usize> = it
         .next()
         .unwrap()
         .split(',')
         .map(|x| x.parse().unwrap())
         .collect();
-    let start = vec![start; n].join("?");
-    let end = end.repeat(n);
+    let conditions = vec![conditions; n].join("?");
+    let ops = ops.repeat(n);
 
-    cmp_line(&start, &end[..])
+    cmp_line(&conditions, &ops[..])
 }
 
 fn compute(text: &str, n: usize) -> usize {
