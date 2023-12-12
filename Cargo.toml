@@ -10,7 +10,6 @@ grid = "*"
 log = "*"
 env_logger = "*"
 test-log = "*"
-itertools = "*"
 
 [features]
 default = ["progressbar"]

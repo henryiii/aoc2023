@@ -3,8 +3,6 @@
 
 extern crate test;
 
-use itertools::Itertools;
-
 fn compare_spaces(spaces: &[usize], ops: &[usize], start: &str) -> bool {
     let (next, mut value) = spaces
         .iter()
@@ -24,28 +22,45 @@ fn compare_spaces(spaces: &[usize], ops: &[usize], start: &str) -> bool {
     value
 }
 
-fn partitions(n: usize, k: usize) -> impl Iterator<Item = Vec<usize>> {
-    use std::iter::once;
-    let nk1 = i64::try_from(n + k - 1).unwrap();
-    (0..nk1).combinations(k - 1).map(move |x| {
-        once(&-1)
-            .chain(x.iter())
-            .zip(x.iter().chain(once(&nk1)))
-            .map(|(a, b)| usize::try_from(b - a - 1).unwrap())
-            .collect()
-    })
+/// Returns true if something was changed, recursive.
+fn partition_next(max: usize, vals: &mut [usize]) -> bool {
+    if vals.is_empty() {
+        return false;
+    }
+    if vals.len() == 1 {
+        if vals[0] == max {
+            return false;
+        }
+        vals[0] = max;
+        return true;
+    }
+    if partition_next(max - vals[0], &mut vals[1..]) {
+        true
+    } else if vals[0] > 0 {
+        vals[0] -= 1;
+        vals[1] = max - vals[0];
+        vals[2..].fill(0);
+        true
+    } else {
+        false
+    }
 }
 
 fn cmp_line(start: &str, ops: &[usize]) -> usize {
     // This is the maximum consecutive space
     let max_space: usize = start.len() - (ops.iter().sum::<usize>());
     let num_spaces = ops.len() + 1;
-    partitions(max_space, num_spaces)
-        .filter(|spaces| {
-            spaces.iter().skip(1).take(spaces.len() - 2).all(|x| *x > 0)
-                && compare_spaces(spaces, ops, start)
-        })
-        .count()
+    let mut spaces = vec![0; num_spaces];
+    spaces[0] = max_space;
+    let mut count = 0;
+    while partition_next(max_space, &mut spaces) {
+        if spaces.iter().skip(1).take(spaces.len() - 2).all(|x| *x > 0)
+            && compare_spaces(&spaces, ops, start)
+        {
+            count += 1;
+        }
+    }
+    count
 }
 
 fn single_line(text: &str, n: usize) -> usize {
@@ -102,13 +117,16 @@ mod tests {
         assert_eq!(single_line(lines.next().unwrap(), 1), 10);
     }
 
-    /*
     #[test]
     fn test_5() {
-        let result = compute(INPUT, 5);
-        assert_eq!(result, 525_152);
+        let mut lines = INPUT.lines();
+        assert_eq!(single_line(lines.next().unwrap(), 5), 1);
+        assert_eq!(single_line(lines.next().unwrap(), 5), 16384);
+        assert_eq!(single_line(lines.next().unwrap(), 5), 1);
+        assert_eq!(single_line(lines.next().unwrap(), 5), 16);
+        assert_eq!(single_line(lines.next().unwrap(), 5), 2500);
+        assert_eq!(single_line(lines.next().unwrap(), 5), 506250);
     }
-    */
 
     #[bench]
     fn bench_1(b: &mut test::Bencher) {
