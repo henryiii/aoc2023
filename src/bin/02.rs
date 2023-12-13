@@ -1,5 +1,6 @@
-#![warn(clippy::all, clippy::pedantic)]
+#![warn(clippy::all, clippy::pedantic, clippy::nursery)]
 
+use itertools::Itertools;
 use std::io::prelude::*;
 use std::ops::Add;
 
@@ -11,33 +12,30 @@ struct Meas {
 }
 
 impl Meas {
-    fn from_str(meas: &str) -> Meas {
-        if let Some(val) = meas.strip_suffix(" red") {
-            Meas {
+    fn from_str(meas: &str) -> Self {
+        match meas.split_ascii_whitespace().collect_tuple() {
+            Some((val, "red")) => Self {
                 red: val.parse().unwrap(),
                 ..Default::default()
-            }
-        } else if let Some(val) = meas.strip_suffix(" blue") {
-            Meas {
+            },
+            Some((val, "blue")) => Self {
                 blue: val.parse().unwrap(),
                 ..Default::default()
-            }
-        } else if let Some(val) = meas.strip_suffix(" green") {
-            Meas {
+            },
+            Some((val, "green")) => Self {
                 green: val.parse().unwrap(),
                 ..Default::default()
-            }
-        } else {
-            panic!("Can't parse {meas}")
+            },
+            _ => panic!("Can't parse {meas}"),
         }
     }
 }
 
 impl Add for Meas {
-    type Output = Meas;
+    type Output = Self;
 
-    fn add(self, other: Meas) -> Meas {
-        Meas {
+    fn add(self, other: Self) -> Self {
+        Self {
             red: self.red + other.red,
             blue: self.blue + other.blue,
             green: self.green + other.green,
@@ -46,12 +44,10 @@ impl Add for Meas {
 }
 
 fn make_meas(meas_str: &str) -> Meas {
-    meas_str.trim().split(", ").fold(
-        Meas {
-            ..Default::default()
-        },
-        |acc, x| acc + Meas::from_str(x),
-    )
+    meas_str
+        .trim()
+        .split(", ")
+        .fold(Meas::default(), |acc, x| acc + Meas::from_str(x))
 }
 
 fn measurements(line: &str) -> (u32, Vec<Meas>) {
@@ -88,16 +84,11 @@ fn accumulator(acc: u32, line: &str) -> u32 {
 
 fn total_power(line: &str) -> u32 {
     let (_, all_meas) = measurements(line);
-    let total = all_meas.iter().fold(
-        Meas {
-            ..Default::default()
-        },
-        |acc, x| Meas {
-            red: std::cmp::max(acc.red, x.red),
-            green: std::cmp::max(acc.green, x.green),
-            blue: std::cmp::max(acc.blue, x.blue),
-        },
-    );
+    let total = all_meas.iter().fold(Meas::default(), |acc, x| Meas {
+        red: std::cmp::max(acc.red, x.red),
+        green: std::cmp::max(acc.green, x.green),
+        blue: std::cmp::max(acc.blue, x.blue),
+    });
     total.red * total.green * total.blue
 }
 

@@ -1,4 +1,4 @@
-#![warn(clippy::all, clippy::pedantic)]
+#![warn(clippy::all, clippy::pedantic, clippy::nursery)]
 
 use std::io::prelude::*;
 
@@ -8,7 +8,7 @@ struct NumberGrid {
     numbers: Vec<(usize, usize, usize, u32)>,
 }
 
-fn adjacent(x: usize, y: usize, cx: usize, cy: usize, sz: usize) -> bool {
+const fn adjacent(x: usize, y: usize, cx: usize, cy: usize, sz: usize) -> bool {
     (y == cy || y == cy + 1 || y + 1 == cy) && x <= cx + 1 && cx < x + 1 + sz
 }
 

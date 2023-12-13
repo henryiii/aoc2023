@@ -1,9 +1,9 @@
 #!/usr/bin/env cargo -Zscript
-#![warn(clippy::all, clippy::pedantic)]
+#![warn(clippy::all, clippy::pedantic, clippy::nursery)]
 
 use std::io::prelude::*;
 
-fn index_to_int(line: &str, value: usize) -> Option<u32> {
+const fn index_to_int(line: &str, value: usize) -> Option<u32> {
     let result = line.as_bytes()[value] as char;
     result.to_digit(10)
 }

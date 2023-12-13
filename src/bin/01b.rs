@@ -1,5 +1,5 @@
 #!/usr/bin/env cargo -Zscript
-#![warn(clippy::all, clippy::pedantic)]
+#![warn(clippy::all, clippy::pedantic, clippy::nursery)]
 
 use std::io::prelude::*;
 
@@ -32,7 +32,7 @@ fn str_to_pair(line: &str) -> (u32, u32) {
     (first, iter.next_back().unwrap_or(first))
 }
 
-fn pair_to_int(pair: (u32, u32)) -> u32 {
+const fn pair_to_int(pair: (u32, u32)) -> u32 {
     10 * pair.0 + pair.1
 }
 

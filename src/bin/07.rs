@@ -1,4 +1,4 @@
-#![warn(clippy::all, clippy::pedantic)]
+#![warn(clippy::all, clippy::pedantic, clippy::nursery)]
 
 use std::{collections::HashMap, io::prelude::*};
 
@@ -41,7 +41,7 @@ struct Hand {
 }
 
 impl Hand {
-    fn new(cards: &[Card; 5], bid: u64) -> Self {
+    const fn new(cards: &[Card; 5], bid: u64) -> Self {
         Self { cards: *cards, bid }
     }
 

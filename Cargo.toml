@@ -4,13 +4,14 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-indicatif = {version = "*", optional=true}
-num = "*"
-grid = "*"
-log = "*"
-env_logger = "*"
-test-log = "*"
 cached = "*"
+env_logger = "*"
+grid = "*"
+indicatif = {version = "*", optional=true}
+itertools = "*"
+log = "*"
+num = "*"
+test-log = "*"
 
 [features]
 default = ["progressbar"]

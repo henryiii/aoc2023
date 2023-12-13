@@ -1,4 +1,4 @@
-#![warn(clippy::all, clippy::pedantic)]
+#![warn(clippy::all, clippy::pedantic, clippy::nursery)]
 
 use std::io::prelude::*;
 
@@ -8,7 +8,7 @@ struct Race {
 }
 
 impl Race {
-    fn new(time: u64, distance: u64) -> Self {
+    const fn new(time: u64, distance: u64) -> Self {
         Self { time, distance }
     }
 

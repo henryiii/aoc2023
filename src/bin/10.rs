@@ -1,4 +1,4 @@
-#![warn(clippy::all, clippy::pedantic)]
+#![warn(clippy::all, clippy::pedantic, clippy::nursery)]
 
 use grid::Grid;
 
@@ -29,18 +29,20 @@ enum MapChar {
     Empty,
 }
 
-impl From<char> for MapChar {
-    fn from(c: char) -> Self {
+impl TryFrom<char> for MapChar {
+    type Error = ();
+
+    fn try_from(c: char) -> Result<Self, Self::Error> {
         match c {
-            'S' => MapChar::Start,
-            '|' => MapChar::Vertical,
-            '-' => MapChar::Horizontal,
-            'J' => MapChar::UpLeft,
-            'L' => MapChar::UpRight,
-            '7' => MapChar::DownLeft,
-            'F' => MapChar::DownRight,
-            '.' => MapChar::Empty,
-            _ => panic!("Invalid char"),
+            'S' => Ok(Self::Start),
+            '|' => Ok(Self::Vertical),
+            '-' => Ok(Self::Horizontal),
+            'J' => Ok(Self::UpLeft),
+            'L' => Ok(Self::UpRight),
+            '7' => Ok(Self::DownLeft),
+            'F' => Ok(Self::DownRight),
+            '.' => Ok(Self::Empty),
+            _ => Err(()),
         }
     }
 }
@@ -48,14 +50,14 @@ impl From<char> for MapChar {
 impl std::fmt::Display for MapChar {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let s = match self {
-            MapChar::Start => "S",
-            MapChar::Vertical => "│",
-            MapChar::Horizontal => "─",
-            MapChar::UpLeft => "╯",
-            MapChar::UpRight => "╰",
-            MapChar::DownLeft => "╮",
-            MapChar::DownRight => "╭",
-            MapChar::Empty => "•",
+            Self::Start => "S",
+            Self::Vertical => "│",
+            Self::Horizontal => "─",
+            Self::UpLeft => "╯",
+            Self::UpRight => "╰",
+            Self::DownLeft => "╮",
+            Self::DownRight => "╭",
+            Self::Empty => "•",
         };
         write!(f, "{s}")
     }
@@ -69,12 +71,12 @@ struct Cursor {
 
 impl Cursor {
     #[must_use]
-    fn new(y: usize, x: usize) -> Self {
+    const fn new(y: usize, x: usize) -> Self {
         Self { y, x }
     }
 
     #[must_use]
-    fn step(&self, dir: Direction) -> Self {
+    const fn step(&self, dir: Direction) -> Self {
         match dir {
             Direction::Up => Self::new(self.y - 1, self.x),
             Direction::Down => Self::new(self.y + 1, self.x),
@@ -131,7 +133,7 @@ impl Cursor {
         assert!(grid[(self.y, self.x)] == MapChar::Start);
         let mut valid_dirs = DIRECTIONS.iter().filter(|dir| {
             log::debug!("{self:?} {dir:?}");
-            if let Some(next) = self.peek(grid, **dir) {
+            self.peek(grid, **dir).map_or(false, |next| {
                 log::debug!("Checking ({next}, {dir:?})");
                 matches!(
                     (next, dir),
@@ -142,9 +144,7 @@ impl Cursor {
                         | (MapChar::DownLeft, Direction::Right | Direction::Up)
                         | (MapChar::DownRight, Direction::Left | Direction::Up)
                 )
-            } else {
-                false
-            }
+            })
         });
         (*valid_dirs.next().unwrap(), *valid_dirs.next().unwrap())
     }
@@ -221,7 +221,7 @@ fn is_inside(grid: &Grid<MapChar>, mask: &Grid<bool>, loc: &(usize, usize)) -> b
 fn compute_and_print_grid(strs: &[&str]) -> (usize, usize) {
     let grid = Grid::from_vec(
         strs.iter()
-            .flat_map(|x| x.chars().map(MapChar::from))
+            .flat_map(|x| x.chars().map(|x| MapChar::try_from(x).unwrap()))
             .collect(),
         strs[0].len(),
     );

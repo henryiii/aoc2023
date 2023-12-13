@@ -1,4 +1,4 @@
-#![warn(clippy::all, clippy::pedantic)]
+#![warn(clippy::all, clippy::pedantic, clippy::nursery)]
 use std::io::prelude::*;
 
 #[cfg(feature = "progressbar")]
@@ -26,7 +26,7 @@ struct Mappers {
 }
 
 impl Mappers {
-    fn new() -> Self {
+    const fn new() -> Self {
         Self {
             mappers: Vec::new(),
         }
@@ -47,7 +47,7 @@ struct AllMappers {
 }
 
 impl AllMappers {
-    fn new() -> Self {
+    const fn new() -> Self {
         Self {
             mappers: Vec::new(),
         }
@@ -103,7 +103,7 @@ where
 fn seeds_as_ranges_brute_force(seeds: &[u64]) -> impl Iterator<Item = u64> + '_ {
     let pairs = seeds.iter().step_by(2).zip(seeds.iter().skip(1).step_by(2));
     let seeds = pairs.map(|(from, len)| (*from..*from + *len));
-    seeds.flatten()
+    seeds.flat_map(|r| (r.start)..(r.end))
 }
 
 fn main() {
