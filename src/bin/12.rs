@@ -1,63 +1,50 @@
 #![warn(clippy::all, clippy::pedantic)]
 #![feature(test)]
 
+#[cfg(feature = "progressbar")]
+use indicatif::ParallelProgressIterator;
+#[cfg(feature = "progressbar")]
+use rayon::iter::{ParallelIterator, IntoParallelRefIterator};
+
+use std::vec;
+
 extern crate test;
 
-fn compare_spaces(spaces: &[usize], ops: &[usize], conditions: &str) -> bool {
-    let (next, mut value) = spaces
-        .iter()
-        .zip(ops.iter())
-        .fold((0, true), |acc, (space, op)| {
-            let next = acc.0 + space + op;
-            let value = acc.1
-                && conditions.chars().skip(acc.0).take(*space).all(|c| c != '#')
-                && conditions
-                    .chars()
-                    .skip(acc.0 + space)
-                    .take(*op)
-                    .all(|x| x != '.');
-            (next, value)
-        });
-    value &= conditions.chars().skip(next).all(|x| x != '#');
-    value
-}
-
-/// Returns true if something was changed, recursive.
-fn partition_next(max: usize, vals: &mut [usize]) -> bool {
-    if vals.is_empty() {
-        return false;
-    }
-    if vals.len() == 1 {
-        if vals[0] == max {
-            return false;
-        }
-        vals[0] = max;
-        return true;
-    }
-    if partition_next(max - vals[0], &mut vals[1..]) {
-        true
-    } else if vals[0] > 0 {
-        vals[0] -= 1;
-        vals[1] = max - vals[0];
-        vals[2..].fill(0);
-        true
-    } else {
-        false
-    }
-}
-
 fn cmp_line(conditions: &str, ops: &[usize]) -> usize {
+    if ops.is_empty() {
+        let val = conditions.chars().all(|x| x != '#');
+        return val as usize;
+    }
+
     // This is the maximum consecutive space
-    let max_space: usize = conditions.len() - (ops.iter().sum::<usize>());
-    let num_spaces = ops.len() + 1;
-    let mut spaces = vec![0; num_spaces];
-    spaces[0] = max_space;
+    let limit_space: usize = conditions.len() - (ops.iter().sum::<usize>() + ops.len() - 1);
     let mut count = 0;
-    while partition_next(max_space, &mut spaces) {
-        if spaces.iter().skip(1).take(spaces.len() - 2).all(|x| *x > 0)
-            && compare_spaces(&spaces, ops, conditions)
-        {
-            count += 1;
+
+    let max_space = conditions
+        .chars()
+        .enumerate()
+        .find(|(_, v)| *v == '#')
+        .map(|(i, _)| i)
+        .unwrap_or(conditions.len());
+    let max_space = max_space.min(limit_space);
+
+    for space in 0..=max_space {
+        let valid = conditions
+            .chars()
+            .skip(space)
+            .take(ops[0])
+            .enumerate()
+            .all(|(_, c)| c != '.')
+            && conditions
+                .chars()
+                .skip(space + ops[0])
+                .next()
+                .unwrap_or('.')
+                != '#';
+        if conditions.chars().skip(space + ops[0]).count() < 2 {
+            count += valid as usize;
+        } else if valid {
+            count += cmp_line(&conditions[space + ops[0] + 1..], &ops[1..]);
         }
     }
     count
@@ -79,13 +66,22 @@ fn single_line(text: &str, n: usize) -> usize {
 }
 
 fn compute(text: &str, n: usize) -> usize {
-    text.lines().map(|x| single_line(x, n)).sum()
+    let lines: Vec<&str> = text.lines().collect();
+
+    #[cfg(feature = "progressbar")]
+    let iter = lines.par_iter().progress_count(lines.len() as u64);
+    #[cfg(not(feature = "progressbar"))]
+    let iter = lines.iter();
+    
+    iter.map(|x| single_line(x, n) ).sum()
 }
 
 fn main() {
     let text = std::fs::read_to_string("input/12.txt").unwrap();
     let result = compute(&text, 1);
-    println!("First = {result}");
+    println!("1x = {result}");
+    let result = compute(&text, 5);
+    println!("5x = {result}");
 }
 
 #[cfg(test)]
@@ -104,6 +100,11 @@ mod tests {
     fn test_1() {
         let result = compute(INPUT, 1);
         assert_eq!(result, 21);
+    }
+
+    #[test]
+    fn test_individual() {
+        assert_eq!(single_line("? 1", 1), 1);
     }
 
     #[test]
