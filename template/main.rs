@@ -1,13 +1,17 @@
 #![warn(clippy::all, clippy::pedantic)]
 
-fn compute(text: &str) -> (i64, i64) {
-    (0, 0)
+type Num = i64;
+
+fn compute(text: &str) -> Num {
+    0
 }
 
 fn main() {
-    let text = std::fs::read_to_string("input/13.txt").unwrap();
-    let (first_result, second_result) = compute(&text);
+    let text = std::fs::read_to_string("input/14.txt").unwrap();
+    let first_result = compute(&text);
     println!("First = {first_result}");
+
+    let second_result = compute(&text);
     println!("Second = {second_result}");
 }
 
@@ -19,9 +23,14 @@ mod tests {
 ";
 
     #[test]
-    fn test() {
-        let (first_result, second_result) = compute(&text);
-        assert_eq!(first_result, 0);
-        assert_eq!(second_result, 0);
+    fn test_first() {
+        let result = compute(&text);
+        assert_eq!(result, 0);
+    }
+
+    #[test]
+    fn test_first() {
+        let result = compute(&text);
+        assert_eq!(result, 0);
     }
 }

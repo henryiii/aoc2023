@@ -4,25 +4,7 @@ use std::io::prelude::*;
 #[cfg(feature = "progressbar")]
 use indicatif::ProgressBar;
 
-struct Range {
-    from: u64,
-    to: u64,
-}
-
-impl Range {
-    fn new(from: u64, to: u64) -> Self {
-        assert!(from <= to);
-        Self { from, to }
-    }
-
-    fn from_size(from: u64, size: u64) -> Self {
-        Self::new(from, from + size)
-    }
-
-    fn contains(&self, value: u64) -> bool {
-        self.from <= value && value < self.to
-    }
-}
+type Range = std::ops::Range<u64>;
 
 struct Mapper {
     range: Range,
@@ -31,8 +13,8 @@ struct Mapper {
 
 impl Mapper {
     fn convert(&self, value: u64) -> Option<u64> {
-        if self.range.contains(value) {
-            Some(value - self.range.from + self.to)
+        if self.range.contains(&value) {
+            Some(value - self.range.start + self.to)
         } else {
             None
         }
@@ -109,7 +91,7 @@ where
             let from = parts.next().unwrap().parse::<u64>().unwrap();
             let size = parts.next().unwrap().parse::<u64>().unwrap();
             mappers.mappers.push(Mapper {
-                range: Range::new(from, from + size),
+                range: (from..from + size),
                 to,
             });
         }
@@ -120,8 +102,8 @@ where
 
 fn seeds_as_ranges_brute_force(seeds: &[u64]) -> impl Iterator<Item = u64> + '_ {
     let pairs = seeds.iter().step_by(2).zip(seeds.iter().skip(1).step_by(2));
-    let seeds = pairs.map(|(from, len)| Range::from_size(*from, *len));
-    seeds.flat_map(|r| (r.from)..(r.to))
+    let seeds = pairs.map(|(from, len)| (*from..*from + *len));
+    seeds.flatten()
 }
 
 fn main() {
