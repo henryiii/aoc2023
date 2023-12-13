@@ -1,19 +1,13 @@
 #![warn(clippy::all, clippy::pedantic)]
-#![feature(test)]
 
-#[cfg(feature = "progressbar")]
-use indicatif::ParallelProgressIterator;
-#[cfg(feature = "progressbar")]
-use rayon::iter::{ParallelIterator, IntoParallelRefIterator};
-
+use cached::proc_macro::cached;
 use std::vec;
 
-extern crate test;
-
-fn cmp_line(conditions: &str, ops: &[usize]) -> usize {
+#[cached]
+fn cmp_line(conditions: String, ops: Vec<usize>) -> usize {
     if ops.is_empty() {
         let val = conditions.chars().all(|x| x != '#');
-        return val as usize;
+        return usize::from(val);
     }
 
     // This is the maximum consecutive space
@@ -24,8 +18,7 @@ fn cmp_line(conditions: &str, ops: &[usize]) -> usize {
         .chars()
         .enumerate()
         .find(|(_, v)| *v == '#')
-        .map(|(i, _)| i)
-        .unwrap_or(conditions.len());
+        .map_or(conditions.len(), |(i, _)| i);
     let max_space = max_space.min(limit_space);
 
     for space in 0..=max_space {
@@ -35,16 +28,14 @@ fn cmp_line(conditions: &str, ops: &[usize]) -> usize {
             .take(ops[0])
             .enumerate()
             .all(|(_, c)| c != '.')
-            && conditions
-                .chars()
-                .skip(space + ops[0])
-                .next()
-                .unwrap_or('.')
-                != '#';
+            && conditions.chars().nth(space + ops[0]).unwrap_or('.') != '#';
         if conditions.chars().skip(space + ops[0]).count() < 2 {
-            count += valid as usize;
+            count += usize::from(valid);
         } else if valid {
-            count += cmp_line(&conditions[space + ops[0] + 1..], &ops[1..]);
+            count += cmp_line(
+                conditions[space + ops[0] + 1..].to_string(),
+                ops[1..].to_vec(),
+            );
         }
     }
     count
@@ -62,18 +53,13 @@ fn single_line(text: &str, n: usize) -> usize {
     let conditions = vec![conditions; n].join("?");
     let ops = ops.repeat(n);
 
-    cmp_line(&conditions, &ops[..])
+    cmp_line(conditions, ops)
 }
 
 fn compute(text: &str, n: usize) -> usize {
-    let lines: Vec<&str> = text.lines().collect();
+    let iter = text.lines();
 
-    #[cfg(feature = "progressbar")]
-    let iter = lines.par_iter().progress_count(lines.len() as u64);
-    #[cfg(not(feature = "progressbar"))]
-    let iter = lines.iter();
-    
-    iter.map(|x| single_line(x, n) ).sum()
+    iter.map(|x| single_line(x, n)).sum()
 }
 
 fn main() {
@@ -127,15 +113,5 @@ mod tests {
         assert_eq!(single_line(lines.next().unwrap(), 5), 16);
         assert_eq!(single_line(lines.next().unwrap(), 5), 2500);
         assert_eq!(single_line(lines.next().unwrap(), 5), 506250);
-    }
-
-    #[bench]
-    fn bench_1(b: &mut test::Bencher) {
-        b.iter(|| compute(INPUT, 1));
-    }
-
-    #[bench]
-    fn bench_2(b: &mut test::Bencher) {
-        b.iter(|| compute(INPUT, 2));
     }
 }
