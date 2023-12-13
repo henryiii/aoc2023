@@ -23,28 +23,50 @@ fn compare_mirror_y(block: &Grid<bool>, val: usize) -> bool {
     true
 }
 
-fn compute_block(block: &Grid<bool>) -> Option<usize> {
+/// Set skip=0 to not skip any values. Otherwise, skip this value if present.
+fn compute_block(block: &Grid<bool>, skip: usize) -> Option<usize> {
     (1..block.rows())
+        .filter(|&x| x * 100 != skip)
         .find(|&y| compare_mirror_y(block, y))
         .map(|x| x * 100)
         .or_else(|| {
             let mut copied = block.clone();
             copied.transpose();
-            (1..copied.rows()).find(|&x| compare_mirror_y(&copied, x))
+            (1..copied.rows())
+                .filter(|&x| x != skip)
+                .find(|&x| compare_mirror_y(&copied, x))
         })
 }
 
-fn compute(text: &str) -> (usize, usize) {
-    let res = text
-        .split("\n\n")
-        .map(|x| compute_block(&make_block(x)).expect(x))
-        .sum();
-    (res, 0)
+fn compute_block_one_smudge(block: &Grid<bool>) -> Option<usize> {
+    let skip = compute_block(block, 0).unwrap();
+    block
+        .indexed_iter()
+        .map(|((y, x), _)| {
+            let mut ng = block.clone();
+            ng[(y, x)] = !ng[(y, x)];
+            compute_block(&ng, skip)
+        })
+        .reduce(Option::or)
+        .flatten()
+}
+
+fn compute(text: &str) -> usize {
+    text.split("\n\n")
+        .map(|s| compute_block(&make_block(s), 0).expect(s))
+        .sum()
+}
+
+fn compute_one_smudge(text: &str) -> usize {
+    text.split("\n\n")
+        .map(|s| compute_block_one_smudge(&make_block(s)).expect(s))
+        .sum()
 }
 
 fn main() {
     let text = std::fs::read_to_string("input/13.txt").unwrap();
-    let (first_result, second_result) = compute(&text);
+    let first_result = compute(&text);
+    let second_result = compute_one_smudge(&text);
     println!("First = {first_result}");
     println!("Second = {second_result}");
 }
@@ -71,19 +93,38 @@ mod tests {
 #....#..#";
 
     #[test]
-    fn test() {
-        let (first_result, second_result) = compute(INPUT);
+    fn simple() {
+        let first_result = compute(INPUT);
         assert_eq!(first_result, 405);
-        assert_eq!(second_result, 0);
     }
 
     #[test]
-    fn on_each() {
+    fn smudged() {
+        let second_result = compute_one_smudge(INPUT);
+        assert_eq!(second_result, 400);
+    }
+
+    #[test]
+    fn on_each_simple() {
         let blocks: Vec<&str> = INPUT.split("\n\n").collect();
         let mut blocks = blocks.into_iter().map(make_block);
-        assert_eq!(compute_block(&blocks.next().unwrap()).unwrap(), 5);
-        assert_eq!(compute_block(&blocks.next().unwrap()).unwrap(), 400);
+        assert_eq!(compute_block(&blocks.next().unwrap(), 0).unwrap(), 5);
+        assert_eq!(compute_block(&blocks.next().unwrap(), 0).unwrap(), 400);
         assert!(blocks.next().is_none());
     }
 
+    #[test]
+    fn on_each_smudged() {
+        let blocks: Vec<&str> = INPUT.split("\n\n").collect();
+        let mut blocks = blocks.into_iter().map(make_block);
+        assert_eq!(
+            compute_block_one_smudge(&blocks.next().unwrap()).unwrap(),
+            300
+        );
+        assert_eq!(
+            compute_block_one_smudge(&blocks.next().unwrap()).unwrap(),
+            100
+        );
+        assert!(blocks.next().is_none());
+    }
 }
