@@ -1,29 +1,26 @@
+use derive_more::{Add, Constructor};
 use itertools::Itertools;
-use derive_more::Add;
+use std::str::FromStr;
 
-#[derive(Default, Add)]
+#[derive(Debug, Clone)]
+struct FailedReadError;
+
+#[derive(Default, Add, Constructor)]
 struct Meas {
     red: u32,
     green: u32,
     blue: u32,
 }
 
-impl Meas {
-    fn from_str(meas: &str) -> Self {
+impl FromStr for Meas {
+    type Err = FailedReadError;
+
+    fn from_str(meas: &str) -> Result<Self, Self::Err> {
         match meas.split_ascii_whitespace().collect_tuple() {
-            Some((val, "red")) => Self {
-                red: val.parse().unwrap(),
-                ..Default::default()
-            },
-            Some((val, "blue")) => Self {
-                blue: val.parse().unwrap(),
-                ..Default::default()
-            },
-            Some((val, "green")) => Self {
-                green: val.parse().unwrap(),
-                ..Default::default()
-            },
-            _ => panic!("Can't parse {meas}"),
+            Some((val, "red")) => Ok(Self::new(val.parse().unwrap(), 0, 0)),
+            Some((val, "green")) => Ok(Self::new(0, val.parse().unwrap(), 0)),
+            Some((val, "blue")) => Ok(Self::new(0, 0, val.parse().unwrap())),
+            _ => Err(FailedReadError),
         }
     }
 }
@@ -32,7 +29,7 @@ fn make_meas(meas_str: &str) -> Meas {
     meas_str
         .trim()
         .split(", ")
-        .fold(Meas::default(), |acc, x| acc + Meas::from_str(x))
+        .fold(Meas::default(), |acc, x| acc + x.parse().unwrap())
 }
 
 fn measurements(line: &str) -> (u32, Vec<Meas>) {
@@ -69,17 +66,19 @@ fn accumulator(acc: u32, line: &str) -> u32 {
 
 fn total_power(line: &str) -> u32 {
     let (_, all_meas) = measurements(line);
-    let total = all_meas.iter().fold(Meas::default(), |acc, x| Meas {
-        red: std::cmp::max(acc.red, x.red),
-        green: std::cmp::max(acc.green, x.green),
-        blue: std::cmp::max(acc.blue, x.blue),
+    let total = all_meas.iter().fold(Meas::default(), |acc, x| {
+        Meas::new(
+            std::cmp::max(acc.red, x.red),
+            std::cmp::max(acc.green, x.green),
+            std::cmp::max(acc.blue, x.blue),
+        )
     });
     total.red * total.green * total.blue
 }
 
 fn main() {
     let text = std::fs::read_to_string("input/02.txt").unwrap();
-    let sum = text.lines().fold(0, |acc, x| accumulator(acc, x));
+    let sum = text.lines().fold(0, accumulator);
 
     let pow = text.lines().fold(0, |acc, x| acc + total_power(x));
     println!("Sum: {sum}");
