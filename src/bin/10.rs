@@ -80,43 +80,40 @@ impl Cursor {
 
     #[must_use]
     fn compute_start_char(&self, grid: &Grid<MapChar>) -> &MapChar {
+        use Direction::{Down, Left, Right, Up};
+
         assert!(grid[(self.y, self.x)] == MapChar::Start);
+
         match self.get_from_start(grid) {
-            (Direction::Up, Direction::Down) | (Direction::Down, Direction::Up) => {
-                &MapChar::Vertical
-            }
-            (Direction::Left, Direction::Right) | (Direction::Right, Direction::Left) => {
-                &MapChar::Horizontal
-            }
-            (Direction::Up, Direction::Left) | (Direction::Left, Direction::Up) => &MapChar::UpLeft,
-            (Direction::Up, Direction::Right) | (Direction::Right, Direction::Up) => {
-                &MapChar::UpRight
-            }
-            (Direction::Down, Direction::Left) | (Direction::Left, Direction::Down) => {
-                &MapChar::DownLeft
-            }
-            (Direction::Down, Direction::Right) | (Direction::Right, Direction::Down) => {
-                &MapChar::DownRight
-            }
+            (Up, Down) | (Down, Up) => &MapChar::Vertical,
+            (Left, Right) | (Right, Left) => &MapChar::Horizontal,
+            (Up, Left) | (Left, Up) => &MapChar::UpLeft,
+            (Up, Right) | (Right, Up) => &MapChar::UpRight,
+            (Down, Left) | (Left, Down) => &MapChar::DownLeft,
+            (Down, Right) | (Right, Down) => &MapChar::DownRight,
             _ => panic!("Invalid start"),
         }
     }
 
     #[must_use]
     fn get_from_start(&self, grid: &Grid<MapChar>) -> (Direction, Direction) {
-        assert!(grid[(self.y, self.x)] == MapChar::Start);
+        use Direction::{Down, Left, Right, Up};
+        use MapChar::{DownLeft, DownRight, Horizontal, Start, UpLeft, UpRight, Vertical};
+
+        assert!(grid[(self.y, self.x)] == Start);
+
         let mut valid_dirs = Direction::iter().filter(|dir| {
             log::debug!("{self:?} {dir:?}");
             self.peek(grid, *dir).map_or(false, |next| {
                 log::debug!("Checking ({next}, {dir:?})");
                 matches!(
                     (next, dir),
-                    (MapChar::Vertical, Direction::Up | Direction::Down)
-                        | (MapChar::Horizontal, Direction::Left | Direction::Right)
-                        | (MapChar::UpLeft, Direction::Right | Direction::Down)
-                        | (MapChar::UpRight, Direction::Left | Direction::Down)
-                        | (MapChar::DownLeft, Direction::Right | Direction::Up)
-                        | (MapChar::DownRight, Direction::Left | Direction::Up)
+                    (Vertical, Up | Down)
+                        | (Horizontal, Left | Right)
+                        | (UpLeft, Right | Down)
+                        | (UpRight, Left | Down)
+                        | (DownLeft, Right | Up)
+                        | (DownRight, Left | Up)
                 )
             })
         });
@@ -129,6 +126,9 @@ impl Cursor {
         grid: &Grid<MapChar>,
         mask: &mut Grid<bool>,
     ) -> usize {
+        use Direction::{Down, Left, Right, Up};
+        use MapChar::{DownLeft, DownRight, Horizontal, Start, UpLeft, UpRight, Vertical};
+
         let mut cursor = self.clone();
         let mut current_dir = start_direction;
         let mut next_dir: Direction;
@@ -137,19 +137,11 @@ impl Cursor {
             next_dir = if let Some(next) = cursor.peek(grid, current_dir) {
                 log::debug!("{i}: {current_dir:?} -> {next}");
                 match (next, current_dir) {
-                    (MapChar::Vertical, Direction::Up)
-                    | (MapChar::UpLeft, Direction::Right)
-                    | (MapChar::UpRight, Direction::Left) => Direction::Up,
-                    (MapChar::Vertical, Direction::Down)
-                    | (MapChar::DownLeft, Direction::Right)
-                    | (MapChar::DownRight, Direction::Left) => Direction::Down,
-                    (MapChar::Horizontal, Direction::Left)
-                    | (MapChar::UpLeft, Direction::Down)
-                    | (MapChar::DownLeft, Direction::Up) => Direction::Left,
-                    (MapChar::Horizontal, Direction::Right)
-                    | (MapChar::UpRight, Direction::Down)
-                    | (MapChar::DownRight, Direction::Up) => Direction::Right,
-                    (MapChar::Start, _) => return i,
+                    (Vertical, Up) | (UpLeft, Right) | (UpRight, Left) => Up,
+                    (Vertical, Down) | (DownLeft, Right) | (DownRight, Left) => Down,
+                    (Horizontal, Left) | (UpLeft, Down) | (DownLeft, Up) => Left,
+                    (Horizontal, Right) | (UpRight, Down) | (DownRight, Up) => Right,
+                    (Start, _) => return i,
                     _ => panic!("No next direction found"),
                 }
             } else {
@@ -164,27 +156,27 @@ impl Cursor {
 
 #[must_use]
 fn is_inside(grid: &Grid<MapChar>, mask: &Grid<bool>, loc: &(usize, usize)) -> bool {
+    use Direction::{Down, Up};
+    use MapChar::{DownLeft, DownRight, Horizontal, Start, UpLeft, UpRight, Vertical};
     let (y, min_x) = *loc;
     let mut crossings = 0;
     let mut enter = None;
     for x in (min_x)..(grid.cols()) {
         if mask[(y, x)] {
             let mut c = grid[(y, x)];
-            if c == MapChar::Start {
+            if c == Start {
                 c = *Cursor::new(y, x).compute_start_char(grid);
             }
             match (c, enter) {
-                (MapChar::Vertical, _) => crossings += 1,
-                (MapChar::DownRight, None) => enter = Some(Direction::Down),
-                (MapChar::UpRight, None) => enter = Some(Direction::Up),
-                (MapChar::DownLeft, Some(Direction::Down))
-                | (MapChar::UpLeft, Some(Direction::Up)) => enter = None,
-                (MapChar::DownLeft, Some(Direction::Up))
-                | (MapChar::UpLeft, Some(Direction::Down)) => {
+                (Vertical, _) => crossings += 1,
+                (DownRight, None) => enter = Some(Down),
+                (UpRight, None) => enter = Some(Up),
+                (DownLeft, Some(Down)) | (UpLeft, Some(Up)) => enter = None,
+                (DownLeft, Some(Up)) | (UpLeft, Some(Down)) => {
                     enter = None;
                     crossings += 1;
                 }
-                (MapChar::Horizontal, Some(_)) => (),
+                (Horizontal, Some(_)) => (),
                 _ => panic!("Invalid char {c:?} at ({y}, {x}), enter={enter:?}"),
             }
         }
