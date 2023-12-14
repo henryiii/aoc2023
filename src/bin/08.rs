@@ -1,17 +1,26 @@
 #![allow(clippy::similar_names)]
 
+use itertools::Itertools;
 use std::collections::HashMap;
+
+use regex::Regex;
 
 fn read(text: &str) -> (String, HashMap<String, (String, String)>) {
     let mut lines = text.lines();
     let directions = lines.next().unwrap().to_string();
     assert!(lines.next().unwrap().is_empty());
+    let re = Regex::new(r"([0-9A-Z]{3}) = \(([0-9A-Z]{3}), ([0-9A-Z]{3})\)").unwrap();
     let nodes: HashMap<String, (String, String)> = lines
         .map(|x| {
-            let key = x.chars().take(3).collect::<String>();
-            let lvalue = x.chars().skip(7).take(3).collect::<String>();
-            let rvalue = x.chars().skip(12).take(3).collect::<String>();
-            (key, (lvalue, rvalue))
+            let (k, l, r) = re
+                .captures(x)
+                .unwrap()
+                .iter()
+                .skip(1)
+                .map(|y| y.unwrap().as_str().to_string())
+                .collect_tuple()
+                .expect(x);
+            (k, (l, r))
         })
         .collect();
     (directions, nodes)

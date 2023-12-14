@@ -5,16 +5,17 @@ edition = "2021"
 
 [dependencies]
 cached = "*"
-derive_more = "*"
 derive-new = "*"
+derive_more = "*"
 env_logger = "*"
 grid = "*"
 indicatif = {version = "*", optional=true}
 itertools = "*"
 log = "*"
 num = "*"
-test-log = "*"
+regex = "*"
 strum = { version = "*", features = ["derive"] }
+test-log = "*"
 
 [features]
 default = ["progressbar"]
