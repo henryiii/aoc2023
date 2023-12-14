@@ -1,6 +1,8 @@
 use grid::Grid;
+use std::str::FromStr;
+use strum::IntoEnumIterator;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::EnumIter)]
 enum Direction {
     Up,
     Down,
@@ -8,57 +10,31 @@ enum Direction {
     Right,
 }
 
-static DIRECTIONS: [Direction; 4] = [
-    Direction::Up,
-    Direction::Down,
-    Direction::Left,
-    Direction::Right,
-];
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::EnumString, strum::Display)]
 enum MapChar {
+    #[strum(serialize = "S", serialize = "s")]
     Start,
+
+    #[strum(serialize = "|", serialize = "│")]
     Vertical,
+
+    #[strum(serialize = "-", serialize = "─")]
     Horizontal,
+
+    #[strum(serialize = "J", serialize = "╯")]
     UpLeft,
+
+    #[strum(serialize = "L", serialize = "╰")]
     UpRight,
+
+    #[strum(serialize = "7", serialize = "╮")]
     DownLeft,
+
+    #[strum(serialize = "F", serialize = "╭")]
     DownRight,
+
+    #[strum(serialize = ".", serialize = "•")]
     Empty,
-}
-
-impl TryFrom<char> for MapChar {
-    type Error = ();
-
-    fn try_from(c: char) -> Result<Self, Self::Error> {
-        match c {
-            'S' => Ok(Self::Start),
-            '|' => Ok(Self::Vertical),
-            '-' => Ok(Self::Horizontal),
-            'J' => Ok(Self::UpLeft),
-            'L' => Ok(Self::UpRight),
-            '7' => Ok(Self::DownLeft),
-            'F' => Ok(Self::DownRight),
-            '.' => Ok(Self::Empty),
-            _ => Err(()),
-        }
-    }
-}
-
-impl std::fmt::Display for MapChar {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let s = match self {
-            Self::Start => "S",
-            Self::Vertical => "│",
-            Self::Horizontal => "─",
-            Self::UpLeft => "╯",
-            Self::UpRight => "╰",
-            Self::DownLeft => "╮",
-            Self::DownRight => "╭",
-            Self::Empty => "•",
-        };
-        write!(f, "{s}")
-    }
 }
 
 #[derive(Debug, Clone)]
@@ -129,9 +105,9 @@ impl Cursor {
     #[must_use]
     fn get_from_start(&self, grid: &Grid<MapChar>) -> (Direction, Direction) {
         assert!(grid[(self.y, self.x)] == MapChar::Start);
-        let mut valid_dirs = DIRECTIONS.iter().filter(|dir| {
+        let mut valid_dirs = Direction::iter().filter(|dir| {
             log::debug!("{self:?} {dir:?}");
-            self.peek(grid, **dir).map_or(false, |next| {
+            self.peek(grid, *dir).map_or(false, |next| {
                 log::debug!("Checking ({next}, {dir:?})");
                 matches!(
                     (next, dir),
@@ -144,7 +120,7 @@ impl Cursor {
                 )
             })
         });
-        (*valid_dirs.next().unwrap(), *valid_dirs.next().unwrap())
+        (valid_dirs.next().unwrap(), valid_dirs.next().unwrap())
     }
     #[must_use]
     fn find_end(
@@ -219,7 +195,7 @@ fn is_inside(grid: &Grid<MapChar>, mask: &Grid<bool>, loc: &(usize, usize)) -> b
 fn compute_and_print_grid(strs: &[&str]) -> (usize, usize) {
     let grid = Grid::from_vec(
         strs.iter()
-            .flat_map(|x| x.chars().map(|x| MapChar::try_from(x).unwrap()))
+            .flat_map(|x| x.chars().map(|x| MapChar::from_str(&x.to_string()).unwrap()))
             .collect(),
         strs[0].len(),
     );

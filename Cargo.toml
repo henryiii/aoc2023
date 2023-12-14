@@ -12,6 +12,7 @@ itertools = "*"
 log = "*"
 num = "*"
 test-log = "*"
+strum = { version = "*", features = ["derive"] }
 
 [features]
 default = ["progressbar"]
