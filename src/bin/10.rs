@@ -1,5 +1,3 @@
-#![warn(clippy::all, clippy::pedantic, clippy::nursery)]
-
 use grid::Grid;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]

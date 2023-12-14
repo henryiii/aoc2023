@@ -16,3 +16,8 @@ test-log = "*"
 [features]
 default = ["progressbar"]
 progressbar = ["dep:indicatif"]
+
+[lints.clippy]
+all = "warn"
+pedantic = "warn"
+nursery = "warn"

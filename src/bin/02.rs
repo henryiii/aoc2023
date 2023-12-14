@@ -1,5 +1,3 @@
-#![warn(clippy::all, clippy::pedantic, clippy::nursery)]
-
 use itertools::Itertools;
 use std::io::prelude::*;
 use std::ops::Add;

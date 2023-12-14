@@ -1,5 +1,3 @@
-#![warn(clippy::all, clippy::pedantic, clippy::nursery)]
-
 use cached::proc_macro::cached;
 use std::vec;
 

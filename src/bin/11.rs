@@ -1,5 +1,3 @@
-#![warn(clippy::all, clippy::pedantic, clippy::nursery)]
-
 fn compute(text: &str, mul: u64) -> u64 {
     assert!(mul > 0);
     let orig_galaxies: Vec<(u64, u64)> = text

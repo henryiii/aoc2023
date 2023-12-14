@@ -1,4 +1,3 @@
-#![warn(clippy::all, clippy::pedantic, clippy::nursery)]
 use grid::Grid;
 
 fn make_block(block: &str) -> Grid<bool> {
