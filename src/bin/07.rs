@@ -1,48 +1,46 @@
-use std::{collections::HashMap, io::prelude::*};
+use std::collections::HashMap;
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Hash)]
-struct Card {
-    value: u64,
+use derive_more::Constructor;
+use itertools::Itertools;
+use strum::EnumString;
+
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Hash, EnumString)]
+enum Card {
+    #[strum(serialize = "2")]
+    Two,
+    #[strum(serialize = "3")]
+    Three,
+    #[strum(serialize = "4")]
+    Four,
+    #[strum(serialize = "5")]
+    Five,
+    #[strum(serialize = "6")]
+    Six,
+    #[strum(serialize = "7")]
+    Seven,
+    #[strum(serialize = "8")]
+    Eight,
+    #[strum(serialize = "9")]
+    Nine,
+    #[strum(serialize = "T")]
+    Ten,
+    #[strum(serialize = "J")]
+    Jack,
+    #[strum(serialize = "Q")]
+    Queen,
+    #[strum(serialize = "K")]
+    King,
+    #[strum(serialize = "A")]
+    Ace,
 }
 
-impl Card {
-    fn new(value: u64) -> Self {
-        assert!((2..=14).contains(&value));
-        Self { value }
-    }
-}
-
-impl std::str::FromStr for Card {
-    type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let b = s.as_bytes();
-        if b.len() != 1 || b[0] <= b'1' {
-            return Err(());
-        }
-        match b[0] {
-            b'T' => Ok(Self::new(10)),
-            b'J' => Ok(Self::new(11)),
-            b'Q' => Ok(Self::new(12)),
-            b'K' => Ok(Self::new(13)),
-            b'A' => Ok(Self::new(14)),
-            x if x.is_ascii_digit() => Ok(Self::new((x - b'0').into())),
-            _ => Err(()),
-        }
-    }
-}
-
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Constructor)]
 struct Hand {
     cards: [Card; 5],
     bid: u64,
 }
 
 impl Hand {
-    const fn new(cards: &[Card; 5], bid: u64) -> Self {
-        Self { cards: *cards, bid }
-    }
-
     fn level(&self) -> u64 {
         let counts: HashMap<Card, u64> = self.cards.iter().fold(HashMap::new(), |mut acc, x| {
             *acc.entry(*x).or_insert(0) += 1;
@@ -80,9 +78,7 @@ impl std::str::FromStr for Hand {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut split = s.split_ascii_whitespace();
-        let hand_str = split.next().unwrap();
-        let bid_str = split.next().unwrap();
+        let (hand_str, bid_str) = s.split_ascii_whitespace().collect_tuple().unwrap();
 
         let cards: Vec<Card> = hand_str
             .chars()
@@ -90,15 +86,13 @@ impl std::str::FromStr for Hand {
             .collect();
 
         let bid: u64 = bid_str.parse().unwrap();
-        Ok(Self::new(&cards.try_into().unwrap(), bid))
+        Ok(Self::new(cards.try_into().unwrap(), bid))
     }
 }
 
 fn main() {
-    let file = std::fs::File::open("input/07.txt").unwrap();
-    let lines_res = std::io::BufReader::new(file).lines();
-    let lines = lines_res.map(std::result::Result::unwrap);
-    let mut hands: Vec<Hand> = lines.map(|x| x.parse().unwrap()).collect();
+    let text = std::fs::read_to_string("input/07.txt").unwrap();
+    let mut hands: Vec<Hand> = text.lines().map(|x| x.parse().unwrap()).collect();
     hands.sort();
     let score: u64 = hands
         .iter()
@@ -146,16 +140,10 @@ QQQJA 483";
 
     #[test]
     fn test_construct() {
-        assert_eq!(Card::new(6), "6".parse().unwrap());
+        assert_eq!(Card::Six, "6".parse().unwrap());
         assert_eq!(
             Hand::new(
-                &[
-                    Card::new(6),
-                    Card::new(7),
-                    Card::new(8),
-                    Card::new(9),
-                    Card::new(10)
-                ],
+                [Card::Six, Card::Seven, Card::Eight, Card::Nine, Card::Ten],
                 123
             ),
             "6789T 123".parse().unwrap()

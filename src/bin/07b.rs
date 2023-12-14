@@ -1,3 +1,7 @@
+//! # Day 7b: Camel Cards
+//!
+//! This follows an older version of problem 7, without the enums.
+
 use std::{collections::HashMap, io::prelude::*};
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Hash)]
