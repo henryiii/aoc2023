@@ -1,4 +1,5 @@
 use derive_more::Constructor;
+use itertools::Itertools;
 
 #[derive(Constructor)]
 struct Race {
@@ -27,12 +28,7 @@ fn get_arr(string: &str) -> Vec<u64> {
 
 fn main() {
     let text = std::fs::read_to_string("input/06.txt").unwrap();
-    let mut lines = text.lines();
-    let time_str = lines.next().unwrap();
-    let distance_str = lines.next().unwrap();
-
-    let time: Vec<u64> = get_arr(time_str);
-    let distance: Vec<u64> = get_arr(distance_str);
+    let (time, distance) = text.lines().map(get_arr).collect_tuple().unwrap();
 
     let races: Vec<Race> = time
         .iter()
@@ -42,9 +38,12 @@ fn main() {
     let ways_to_win: u64 = races.iter().map(Race::ways_to_win).product();
     println!("Ways to win: {ways_to_win}");
 
-    let distance_joined: u64 = get_arr(&distance_str.replace(' ', ""))[0];
-    let time_joined: u64 = get_arr(&time_str.replace(' ', ""))[0];
-    let ways_to_win = Race::new(time_joined, distance_joined).ways_to_win();
+    let (time, distance) = text
+        .lines()
+        .map(|x| get_arr(&x.replace(' ', ""))[0])
+        .collect_tuple()
+        .unwrap();
+    let ways_to_win = Race::new(time, distance).ways_to_win();
     println!("Joined ways to win: {ways_to_win}");
 }
 
@@ -58,11 +57,7 @@ Distance:  9  40  200";
 
     #[test]
     fn test_read() {
-        let mut lines = INPUT.lines();
-        let time_str = lines.next().unwrap();
-        let distance_str = lines.next().unwrap();
-        let time: Vec<u64> = get_arr(time_str);
-        let distance: Vec<u64> = get_arr(distance_str);
+        let (time, distance) = INPUT.lines().map(get_arr).collect_tuple().unwrap();
         let races: Vec<Race> = time
             .iter()
             .zip(&distance)
@@ -76,9 +71,12 @@ Distance:  9  40  200";
         assert_eq!(ways_to_win, vec![4, 8, 9]);
         assert_eq!(total_ways, 288);
 
-        let distance_joined: u64 = get_arr(&distance_str.replace(" ", ""))[0];
-        let time_joined: u64 = get_arr(&time_str.replace(" ", ""))[0];
-        let ways_to_win = Race::new(time_joined, distance_joined).ways_to_win();
+        let (time, distance) = INPUT
+            .lines()
+            .map(|x| get_arr(&x.replace(' ', ""))[0])
+            .collect_tuple()
+            .unwrap();
+        let ways_to_win = Race::new(time, distance).ways_to_win();
         assert_eq!(ways_to_win, 71503);
     }
 }
