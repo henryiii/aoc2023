@@ -1,15 +1,12 @@
-use std::io::prelude::*;
+use derive_more::Constructor;
 
+#[derive(Constructor)]
 struct Race {
     time: u64,
     distance: u64,
 }
 
 impl Race {
-    const fn new(time: u64, distance: u64) -> Self {
-        Self { time, distance }
-    }
-
     fn ways_to_win(&self) -> u64 {
         (0..(self.time))
             .map(|a_time| u64::from(a_time * (self.time - a_time) > self.distance))
@@ -29,14 +26,13 @@ fn get_arr(string: &str) -> Vec<u64> {
 }
 
 fn main() {
-    let file = std::fs::File::open("input/06.txt").unwrap();
-    let lines_res = std::io::BufReader::new(file).lines();
-    let mut lines = lines_res.map(std::result::Result::unwrap);
+    let text = std::fs::read_to_string("input/06.txt").unwrap();
+    let mut lines = text.lines();
     let time_str = lines.next().unwrap();
     let distance_str = lines.next().unwrap();
 
-    let time: Vec<u64> = get_arr(&time_str);
-    let distance: Vec<u64> = get_arr(&distance_str);
+    let time: Vec<u64> = get_arr(time_str);
+    let distance: Vec<u64> = get_arr(distance_str);
 
     let races: Vec<Race> = time
         .iter()
@@ -62,11 +58,11 @@ Distance:  9  40  200";
 
     #[test]
     fn test_read() {
-        let mut lines = INPUT.lines().map(|x| x.to_string());
+        let mut lines = INPUT.lines();
         let time_str = lines.next().unwrap();
         let distance_str = lines.next().unwrap();
-        let time: Vec<u64> = get_arr(&time_str);
-        let distance: Vec<u64> = get_arr(&distance_str);
+        let time: Vec<u64> = get_arr(time_str);
+        let distance: Vec<u64> = get_arr(distance_str);
         let races: Vec<Race> = time
             .iter()
             .zip(&distance)
