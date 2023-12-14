@@ -7,7 +7,7 @@ fn compute(text: &str) -> Num {
 }
 
 fn main() {
-    let text = std::fs::read_to_string("input/14.txt").unwrap();
+    let text = std::fs::read_to_string("input/15.txt").unwrap();
     let first_result = compute(&text);
     println!("First = {first_result}");
 
@@ -24,13 +24,7 @@ mod tests {
 
     #[test]
     fn test_first() {
-        let result = compute(&text);
-        assert_eq!(result, 0);
-    }
-
-    #[test]
-    fn test_first() {
-        let result = compute(&text);
+        let result = compute(INPUT);
         assert_eq!(result, 0);
     }
 }

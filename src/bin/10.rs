@@ -195,7 +195,10 @@ fn is_inside(grid: &Grid<MapChar>, mask: &Grid<bool>, loc: &(usize, usize)) -> b
 fn compute_and_print_grid(strs: &[&str]) -> (usize, usize) {
     let grid = Grid::from_vec(
         strs.iter()
-            .flat_map(|x| x.chars().map(|x| MapChar::from_str(&x.to_string()).unwrap()))
+            .flat_map(|x| {
+                x.chars()
+                    .map(|x| MapChar::from_str(&x.to_string()).unwrap())
+            })
             .collect(),
         strs[0].len(),
     );
