@@ -1,5 +1,13 @@
+//! # Day 13: Mirrors
+//!
+//! The solution here makes copies of the blocks. These could be made in-place, but
+//! this is fast enough and simpler.
+//!
+//! See <https://adventofcode.com/2023/day/13>
+
 use grid::Grid;
 
+/// Make a block of bools from a string.
 fn make_block(block: &str) -> Grid<bool> {
     Grid::from_vec(
         block
@@ -10,6 +18,8 @@ fn make_block(block: &str) -> Grid<bool> {
     )
 }
 
+/// Compare around a y mirror line. If you need to compare around x, transpose
+/// the block first.
 fn compare_mirror_y(block: &Grid<bool>, val: usize) -> bool {
     let width = usize::min(val, block.rows() - val);
     for y in 0..width {
@@ -22,7 +32,8 @@ fn compare_mirror_y(block: &Grid<bool>, val: usize) -> bool {
     true
 }
 
-/// Set skip=0 to not skip any values. Otherwise, skip this value if present.
+/// Find the mirror line. Set skip=0 to not skip any values. Otherwise, skip
+/// this value if present.
 fn compute_block(block: &Grid<bool>, skip: usize) -> Option<usize> {
     (1..block.rows())
         .filter(|&x| x * 100 != skip)
@@ -37,6 +48,8 @@ fn compute_block(block: &Grid<bool>, skip: usize) -> Option<usize> {
         })
 }
 
+/// This computes smudges and checks each block. It skips the non-smudged
+/// result.
 fn compute_block_one_smudge(block: &Grid<bool>) -> Option<usize> {
     let skip = compute_block(block, 0).unwrap();
     block
@@ -50,12 +63,14 @@ fn compute_block_one_smudge(block: &Grid<bool>) -> Option<usize> {
         .flatten()
 }
 
+/// Compute all the first part.
 fn compute(text: &str) -> usize {
     text.split("\n\n")
         .map(|s| compute_block(&make_block(s), 0).expect(s))
         .sum()
 }
 
+/// Compute all the second part.
 fn compute_one_smudge(text: &str) -> usize {
     text.split("\n\n")
         .map(|s| compute_block_one_smudge(&make_block(s)).expect(s))
