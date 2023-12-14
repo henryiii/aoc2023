@@ -1,7 +1,7 @@
-use std::io::prelude::*;
-
 #[cfg(feature = "progressbar")]
 use indicatif::ProgressIterator;
+
+use derive_new::new;
 
 type Range = std::ops::Range<u64>;
 
@@ -20,17 +20,13 @@ impl Mapper {
     }
 }
 
+#[derive(new)]
 struct Mappers {
+    #[new(default)]
     mappers: Vec<Mapper>,
 }
 
 impl Mappers {
-    const fn new() -> Self {
-        Self {
-            mappers: Vec::new(),
-        }
-    }
-
     fn convert(&self, value: u64) -> u64 {
         for mapper in &self.mappers {
             if let Some(result) = mapper.convert(value) {
@@ -41,17 +37,13 @@ impl Mappers {
     }
 }
 
+#[derive(new)]
 struct AllMappers {
+    #[new(default)]
     mappers: Vec<Mappers>,
 }
 
 impl AllMappers {
-    const fn new() -> Self {
-        Self {
-            mappers: Vec::new(),
-        }
-    }
-
     fn convert(&self, value: u64) -> u64 {
         let mut value = value;
         for mapper in &self.mappers {
@@ -61,10 +53,7 @@ impl AllMappers {
     }
 }
 
-fn read<I>(lines: I) -> (Vec<u64>, AllMappers)
-where
-    I: IntoIterator<Item = String>,
-{
+fn read<'a>(lines: impl Iterator<Item = &'a str>) -> (Vec<u64>, AllMappers) {
     let mut lines = lines.into_iter();
     let seeds: Vec<u64> = lines
         .next()
@@ -106,10 +95,8 @@ fn seeds_as_ranges_brute_force(seeds: &[u64]) -> impl Iterator<Item = u64> + '_ 
 }
 
 fn main() {
-    let file = std::fs::File::open("input/05.txt").unwrap();
-    let lines_res = std::io::BufReader::new(file).lines();
-    let lines = lines_res.map(std::result::Result::unwrap);
-    let (seeds, all_mappers) = read(lines);
+    let text = std::fs::read_to_string("input/05.txt").unwrap();
+    let (seeds, all_mappers) = read(text.lines());
     let min = seeds.iter().map(|x| all_mappers.convert(*x)).min().unwrap();
     println!("Min: {min}");
 
@@ -164,8 +151,7 @@ humidity-to-location map:
 
     #[test]
     fn test_05() {
-        let lines: Vec<&str> = INPUT.lines().collect();
-        let (seeds, all_mappers) = read(lines.iter().map(|x| x.to_string()));
+        let (seeds, all_mappers) = read(INPUT.lines());
         assert_eq!(seeds, vec![79, 14, 55, 13]);
         assert_eq!(all_mappers.mappers.len(), 7);
         assert_eq!(all_mappers.mappers[0].convert(79), 81);
@@ -191,8 +177,7 @@ humidity-to-location map:
 
     #[test]
     fn test_05b_brute_force() {
-        let lines: Vec<&str> = INPUT.lines().collect();
-        let (seeds, all_mappers) = read(lines.iter().map(|x| x.to_string()));
+        let (seeds, all_mappers) = read(INPUT.lines());
         let all_seeds = seeds_as_ranges_brute_force(&seeds);
         let min = all_seeds.map(|x| all_mappers.convert(x)).min().unwrap();
         assert_eq!(min, 46);
