@@ -1,7 +1,7 @@
+use derive_more::Constructor;
 use grid::Grid;
 use std::str::FromStr;
 use strum::IntoEnumIterator;
-use derive_more::Constructor;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::EnumIter)]
 enum Direction {
