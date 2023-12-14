@@ -1,6 +1,7 @@
 use grid::Grid;
 use std::str::FromStr;
 use strum::IntoEnumIterator;
+use derive_more::Constructor;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::EnumIter)]
 enum Direction {
@@ -12,32 +13,32 @@ enum Direction {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::EnumString, strum::Display)]
 enum MapChar {
-    #[strum(serialize = "S", serialize = "s")]
+    #[strum(serialize = "S")]
     Start,
 
-    #[strum(serialize = "|", serialize = "│")]
+    #[strum(serialize = "|", to_string = "│")]
     Vertical,
 
-    #[strum(serialize = "-", serialize = "─")]
+    #[strum(serialize = "-", to_string = "─")]
     Horizontal,
 
-    #[strum(serialize = "J", serialize = "╯")]
+    #[strum(serialize = "J", to_string = "╯")]
     UpLeft,
 
-    #[strum(serialize = "L", serialize = "╰")]
+    #[strum(serialize = "L", to_string = "╰")]
     UpRight,
 
-    #[strum(serialize = "7", serialize = "╮")]
+    #[strum(serialize = "7", to_string = "╮")]
     DownLeft,
 
-    #[strum(serialize = "F", serialize = "╭")]
+    #[strum(serialize = "F", to_string = "╭")]
     DownRight,
 
-    #[strum(serialize = ".", serialize = "•")]
+    #[strum(serialize = ".", to_string = "•")]
     Empty,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Constructor)]
 struct Cursor {
     y: usize,
     x: usize,
@@ -45,12 +46,7 @@ struct Cursor {
 
 impl Cursor {
     #[must_use]
-    const fn new(y: usize, x: usize) -> Self {
-        Self { y, x }
-    }
-
-    #[must_use]
-    const fn step(&self, dir: Direction) -> Self {
+    fn step(&self, dir: Direction) -> Self {
         match dir {
             Direction::Up => Self::new(self.y - 1, self.x),
             Direction::Down => Self::new(self.y + 1, self.x),
