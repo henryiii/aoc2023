@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 cached = "*"
+derive_more = "*"
 env_logger = "*"
 grid = "*"
 indicatif = {version = "*", optional=true}

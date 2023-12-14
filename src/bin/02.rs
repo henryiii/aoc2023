@@ -1,12 +1,11 @@
 use itertools::Itertools;
-use std::io::prelude::*;
-use std::ops::Add;
+use derive_more::Add;
 
-#[derive(Default)]
+#[derive(Default, Add)]
 struct Meas {
     red: u32,
-    blue: u32,
     green: u32,
+    blue: u32,
 }
 
 impl Meas {
@@ -25,18 +24,6 @@ impl Meas {
                 ..Default::default()
             },
             _ => panic!("Can't parse {meas}"),
-        }
-    }
-}
-
-impl Add for Meas {
-    type Output = Self;
-
-    fn add(self, other: Self) -> Self {
-        Self {
-            red: self.red + other.red,
-            blue: self.blue + other.blue,
-            green: self.green + other.green,
         }
     }
 }
@@ -91,13 +78,10 @@ fn total_power(line: &str) -> u32 {
 }
 
 fn main() {
-    let file = std::fs::File::open("input/02.txt").unwrap();
-    let lines = std::io::BufReader::new(file).lines();
-    let sum = lines.fold(0, |acc, x| accumulator(acc, &x.unwrap()));
+    let text = std::fs::read_to_string("input/02.txt").unwrap();
+    let sum = text.lines().fold(0, |acc, x| accumulator(acc, x));
 
-    let file = std::fs::File::open("input/02.txt").unwrap();
-    let lines = std::io::BufReader::new(file).lines();
-    let pow = lines.fold(0, |acc, x| acc + total_power(&x.unwrap()));
+    let pow = text.lines().fold(0, |acc, x| acc + total_power(x));
     println!("Sum: {sum}");
     println!("Total power: {pow}");
 }
@@ -114,17 +98,15 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green";
 
     #[test]
     fn test_02() {
-        let lines = INPUT.lines();
-        let full_total = lines.clone().fold(0, |acc, x| acc + measurements(x).0);
+        let full_total = INPUT.lines().fold(0, |acc, x| acc + measurements(x).0);
         assert_eq!(full_total, 15);
-        let sum = lines.fold(0, |acc, x| accumulator(acc, x));
+        let sum = INPUT.lines().fold(0, |acc, x| accumulator(acc, x));
         assert_eq!(sum, 8);
     }
 
     #[test]
     fn test_02b() {
-        let lines = INPUT.lines();
-        let pow = lines.fold(0, |acc, x| acc + total_power(x));
+        let pow = INPUT.lines().fold(0, |acc, x| acc + total_power(x));
         assert_eq!(pow, 2286);
     }
 }
