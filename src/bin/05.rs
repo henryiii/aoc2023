@@ -1,7 +1,7 @@
 use std::io::prelude::*;
 
 #[cfg(feature = "progressbar")]
-use indicatif::ProgressBar;
+use indicatif::ProgressIterator;
 
 type Range = std::ops::Range<u64>;
 
@@ -116,9 +116,7 @@ fn main() {
     let seed_iter = seeds_as_ranges_brute_force(&seeds);
 
     #[cfg(feature = "progressbar")]
-    let pb = ProgressBar::new(seeds.iter().skip(1).step_by(2).sum());
-    #[cfg(feature = "progressbar")]
-    let seed_iter = pb.wrap_iter(seed_iter);
+    let seed_iter = seed_iter.progress_count(seeds.iter().skip(1).step_by(2).sum());
 
     let min = seed_iter.map(|x| all_mappers.convert(x)).min().unwrap();
 
