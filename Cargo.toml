@@ -16,6 +16,7 @@ num = "*"
 regex = "*"
 strum = { version = "*", features = ["derive"] }
 test-log = "*"
+indexmap = "*"
 
 [features]
 default = ["progressbar"]

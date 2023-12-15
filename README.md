@@ -60,5 +60,6 @@ A few of the crates I'm using or have used:
 - `num`: Needed `lcm` in a problem.
 - `rayon` (not actively used): Easy multithreading
 - `strum`: Powerful enum tools like conversion with strings & iteration over enums
+- `indexmap`: Ordered map
 
 I added some documentation to 13 to try `cargo doc`.
