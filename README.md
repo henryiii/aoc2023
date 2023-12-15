@@ -14,6 +14,8 @@ cargo fmt
 cargo clippy
 ```
 
+You should have Rust 1.74+ to use the `Cargo.toml` config for clippy.
+
 ## Tests
 
 Use:
@@ -32,8 +34,16 @@ Use:
 cargo run -r --bin 01
 ```
 
-(`-r` for release mode highly recommended for `05` and `06`!)
+(`-r` for release mode highly recommended for some problems, like `05`!)
 
+
+## Docs
+
+Some problems have docs, build with:
+
+```bash
+cargo docs --no-deps
+```
 
 ## Notes
 
