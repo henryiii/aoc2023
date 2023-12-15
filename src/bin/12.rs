@@ -1,3 +1,13 @@
+/*!
+# 2023 Day 12 - Missing information
+
+<https://adventofcode.com/2023/day/12>
+
+The key trick here is caching. I'm using the `cached` library, which provides a Python
+`itertools.cache`-like syntax for Rust. It takes ~10.5 hours to solve without caching, even with
+rayon multithreading (see history for that). This takes less than a second.
+*/
+
 use cached::proc_macro::cached;
 use std::vec;
 

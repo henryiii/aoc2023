@@ -1,13 +1,25 @@
+/*!
+# 2023 Day 3 - Number grid
+
+<https://adventofcode.com/2023/day/3>
+
+This creates a grid of numbers and gears, stored as pairs. It uses a buffered
+file reader, which reads the file a line at a time (not required, as the file
+isn't that large, but interesting). The implentation is mostly in the struct's
+impl block. The struct is mostly just for passing values around together,
+though.
+*/
+
 use std::io::prelude::*;
+
+const fn adjacent(x: usize, y: usize, cx: usize, cy: usize, sz: usize) -> bool {
+    (y == cy || y == cy + 1 || y + 1 == cy) && x <= cx + 1 && cx < x + 1 + sz
+}
 
 struct NumberGrid {
     chars: Vec<(usize, usize)>,
     gears: Vec<(usize, usize)>,
     numbers: Vec<(usize, usize, usize, u32)>,
-}
-
-const fn adjacent(x: usize, y: usize, cx: usize, cy: usize, sz: usize) -> bool {
-    (y == cy || y == cy + 1 || y + 1 == cy) && x <= cx + 1 && cx < x + 1 + sz
 }
 
 impl NumberGrid {

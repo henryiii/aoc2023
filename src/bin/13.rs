@@ -1,9 +1,11 @@
-//! # Day 13: Mirrors
-//!
-//! The solution here makes copies of the blocks. These could be made in-place, but
-//! this is fast enough and simpler.
-//!
-//! See <https://adventofcode.com/2023/day/13>
+/*!
+# 2023 Day 13: Mirrors
+
+<https://adventofcode.com/2023/day/13>
+
+The solution here makes copies of the blocks. These could be made in-place, but
+this is fast enough and simpler.
+*/
 
 use grid::Grid;
 

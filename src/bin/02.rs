@@ -1,10 +1,32 @@
+/*!
+# 2023 Day 2 - Colored balls
+
+<https://adventofcode.com/2023/day/2>
+
+This is a nice introduction to custom structs. I originally used pure Rust (see
+history), but added some nice utilities from `derive_more` and `itertools` to
+simplify (pretty much fully replace) the impl blocks. I'm also implementing the
+`FromStr` trait to convert from a string to my Meas struct.
+
+I'm also doing some error handling here (see history for different version, also
+with error hanlding). It was rather forced on me by the `FromStr` trait, but I
+think it's a good idea to get used to it instead of simply unwrapping all the
+time. Which I'm going to most of the time, since these are controlled inputs.
+
+I'm currently not using `anyhow` and `thiserror`, but might in the future. This
+would make error handling and messages better, and avoid the
+`.or(Err(FailedReadError))`.
+*/
+
 use derive_more::{Add, Constructor};
 use itertools::Itertools;
 use std::str::FromStr;
 
+/// This is an error for my `FromStr` implementation.
 #[derive(Debug, Clone)]
 struct FailedReadError;
 
+/// This is a measurement of balls, with the number of each color present.
 #[derive(Default, Add, Constructor)]
 struct Meas {
     red: u32,
@@ -15,21 +37,24 @@ struct Meas {
 impl FromStr for Meas {
     type Err = FailedReadError;
 
+    /// This accepts strings of the form `"1 red, 2 green, 3 blue"` and adds
+    /// them together.
     fn from_str(meas: &str) -> Result<Self, Self::Err> {
-        match meas.split_ascii_whitespace().collect_tuple() {
-            Some((val, "red")) => Ok(Self::new(val.parse().unwrap(), 0, 0)),
-            Some((val, "green")) => Ok(Self::new(0, val.parse().unwrap(), 0)),
-            Some((val, "blue")) => Ok(Self::new(0, 0, val.parse().unwrap())),
-            _ => Err(FailedReadError),
-        }
+        meas.trim().split(',').try_fold(Self::default(), |acc, x| {
+            let (val, color) = x
+                .split_ascii_whitespace()
+                .collect_tuple()
+                .ok_or(FailedReadError)?;
+            let val: u32 = val.parse().or(Err(FailedReadError))?;
+            let current = match color {
+                "red" => Self::new(val, 0, 0),
+                "green" => Self::new(0, val, 0),
+                "blue" => Self::new(0, 0, val),
+                _ => Err(FailedReadError)?,
+            };
+            Ok(acc + current)
+        })
     }
-}
-
-fn make_meas(meas_str: &str) -> Meas {
-    meas_str
-        .trim()
-        .split(", ")
-        .fold(Meas::default(), |acc, x| acc + x.parse().unwrap())
 }
 
 fn measurements(line: &str) -> (u32, Vec<Meas>) {
@@ -38,7 +63,7 @@ fn measurements(line: &str) -> (u32, Vec<Meas>) {
     let game_str = split[0];
     let game_number: u32 = game_str.strip_prefix("Game ").unwrap().parse().unwrap();
     let results = split[1].split(';');
-    let meas = results.map(make_meas).collect();
+    let meas = results.map(|x| x.parse().unwrap()).collect();
     (game_number, meas)
 }
 
@@ -50,14 +75,7 @@ fn valid_measurements(max: &Meas, all_meas: &[Meas]) -> bool {
 
 fn accumulator(acc: u32, line: &str) -> u32 {
     let (game_number, all_meas) = measurements(line);
-    if valid_measurements(
-        &Meas {
-            red: 12,
-            green: 13,
-            blue: 14,
-        },
-        &all_meas[..],
-    ) {
+    if valid_measurements(&Meas::new(12, 13, 14), &all_meas) {
         acc + game_number
     } else {
         acc

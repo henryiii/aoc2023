@@ -1,4 +1,13 @@
-#![allow(clippy::similar_names)]
+/*!
+# 2023 Day 8: Maze
+
+<https://adventofcode.com/2023/day/8>
+
+
+This is a maze. For some reason, part two has a weird structure in the data that
+I finally discoved and exploited; otherwise, the solution is much harder. I'm
+now using regex to parse the input.
+*/
 
 use itertools::Itertools;
 use std::collections::HashMap;

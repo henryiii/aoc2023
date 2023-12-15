@@ -1,4 +1,12 @@
-use std::io::prelude::*;
+/*!
+# 2023 Day 4 - Winning cards
+
+<https://adventofcode.com/2023/day/4>
+
+This is a simple counting problem with cards holding numbers. The solution
+covers most of what 3 did, custom struct and error, `FromStr`, etc.
+*/
+
 use std::str::FromStr;
 
 #[derive(Debug, Clone)]
@@ -60,9 +68,8 @@ fn card_count(cards: &[Card]) -> Vec<usize> {
 }
 
 fn main() {
-    let file = std::fs::File::open("input/04.txt").unwrap();
-    let lines = std::io::BufReader::new(file).lines();
-    let cards: Vec<Card> = lines.map(|x| x.unwrap().parse().unwrap()).collect();
+    let text = std::fs::read_to_string("input/04.txt").unwrap();
+    let cards: Vec<Card> = text.lines().map(|x| x.parse().unwrap()).collect();
     let score: u32 = cards.iter().map(Card::score).sum();
     println!("Score: {score}");
     let count: usize = card_count(&cards).iter().sum();
@@ -83,8 +90,7 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11";
 
     #[test]
     fn test_03() {
-        let lines = INPUT.lines().map(|x| x.to_string());
-        let cards: Vec<Card> = lines.map(|x| x.parse().unwrap()).collect();
+        let cards: Vec<Card> = INPUT.lines().map(|x| x.parse().unwrap()).collect();
         assert_eq!(cards.len(), 6);
         assert_eq!(cards[0].winning.len(), 5);
         assert_eq!(cards[0].numbers.len(), 8);

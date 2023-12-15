@@ -1,3 +1,11 @@
+/*!
+# 2023 Day 9: Number Sequence
+
+<https://adventofcode.com/2023/day/9>
+
+This one is very simple and didn't need anything special, just simple recursion.
+*/
+
 fn read(input: &str) -> impl Iterator<Item = Vec<i64>> + '_ {
     input.lines().map(|line| {
         line.split_whitespace()

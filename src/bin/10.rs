@@ -1,3 +1,13 @@
+/*!
+# 2023 Day 10: Maps
+
+<https://adventofcode.com/2023/day/10>
+
+This was originally done by hand, but was much better using `strum`, `Grid`,
+etc.  From the beginning, though, I wanted the pretty color map output. It was
+really easy once I started using these crates.
+*/
+
 use derive_more::Constructor;
 use grid::Grid;
 use std::str::FromStr;

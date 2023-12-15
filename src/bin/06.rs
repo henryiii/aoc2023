@@ -1,3 +1,13 @@
+/*!
+# 2023 Day 6 - Races
+
+<https://adventofcode.com/2023/day/6>
+
+This continus to use a few helpers (as always with the first 10 days or so,
+check history for pure implementations). I'm not implenting `FromStr` since
+races are recorded vertically.
+*/
+
 use derive_more::Constructor;
 use itertools::Itertools;
 

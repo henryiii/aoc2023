@@ -1,7 +1,7 @@
-#![warn(clippy::all, clippy::pedantic, clippy::nursery)]
-
 /*!
-# Problem 15 - HASH and HASHMAP
+# 2023 Day 15 - HASH and HASHMAP
+
+<https://adventofcode.com/2023/day/15>
 
 This problem is very simple if you have an ordered hashmap. I originally
 solved this one on my phone in Python; for comparison, here it is:
@@ -35,7 +35,11 @@ def hshmap(x):
 
 print(hshmap(INPUT.split(',')))
 ```
+
+This uses an ordered hashmap crate. I also played with `wrapping_mul`, but it's not really useful
+here since the addition may go over 256.
 */
+
 use indexmap::IndexMap;
 
 fn compute_hash(text: &str) -> usize {
@@ -61,6 +65,7 @@ fn str_to_array(text: &str) -> Vec<&str> {
     text.trim().split(',').collect()
 }
 
+#[inline]
 fn hash(text: &str) -> usize {
     text.bytes()
         .fold(0, |acc, x| ((acc + usize::from(x)) * 17) % 256)

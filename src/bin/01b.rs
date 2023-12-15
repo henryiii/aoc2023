@@ -1,5 +1,13 @@
 #!/usr/bin/env cargo -Zscript
 
+/*!
+# 2023 Day 1 - Number line
+
+<https://adventofcode.com/2023/day/1>
+
+This is part 2. This could probably use `strum`, but I went with simple and performant.
+*/
+
 use std::io::prelude::*;
 
 const NUMS: &[&str] = &[

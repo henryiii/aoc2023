@@ -1,3 +1,12 @@
+/*!
+# 2023 Day 11 - Expanding galaxies
+
+<https://adventofcode.com/2023/day/11>
+
+The key trick here is storing the galaxies as (x,y) pairs. That makes part 2 much easier (see
+history for the original part 1). Otherwise, it's quite simpler to solve functionally.
+*/
+
 fn compute(text: &str, mul: u64) -> u64 {
     assert!(mul > 0);
     let orig_galaxies: Vec<(u64, u64)> = text

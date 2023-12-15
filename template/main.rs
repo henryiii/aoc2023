@@ -1,18 +1,27 @@
-#![warn(clippy::all, clippy::pedantic, clippy::nursery)]
+/*!
+# 2023 Day X - ...
+
+<https://adventofcode.com/2023/day/X>
+
+*/
 
 type Num = i64;
 
-fn compute(text: &str) -> Num {
+fn compute1(text: &str) -> Num {
+    0
+}
+
+fn compute2(text: &str) -> Num {
     0
 }
 
 fn main() {
     let text = std::fs::read_to_string("input/15.txt").unwrap();
-    let first_result = compute(&text);
-    println!("First = {first_result}");
+    let result = compute1(&text);
+    println!("First = {result}");
 
-    let second_result = compute(&text);
-    println!("Second = {second_result}");
+    let second_result = compute2(&text);
+    println!("Second = {result}");
 }
 
 #[cfg(test)]
@@ -24,7 +33,13 @@ mod tests {
 
     #[test]
     fn test_first() {
-        let result = compute(INPUT);
+        let result = compute1(INPUT);
+        assert_eq!(result, 0);
+    }
+
+    #[test]
+    fn test_first() {
+        let result = compute2(INPUT);
         assert_eq!(result, 0);
     }
 }

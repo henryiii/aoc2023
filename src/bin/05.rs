@@ -1,10 +1,28 @@
+/*!
+# 2023 Day 5 - Mapping ranges
+
+<https://adventofcode.com/2023/day/5>
+
+
+This computes the answer the brute-force way. It's a bit slow, so I've added a
+progress bar (using the `progressbar` feature, enabled by default). I've also
+used the built-in `Range` instead of a custom one (see history). I'm also using
+the `derive_new` crate to add new functions with default values to structs.
+
+I'm also using `itertools` to get a nice tuple conversion.
+*/
+
 #[cfg(feature = "progressbar")]
 use indicatif::ProgressIterator;
 
 use derive_new::new;
+use itertools::Itertools;
+
+use std::str::FromStr;
 
 type Range = std::ops::Range<u64>;
 
+#[derive(Debug, new)]
 struct Mapper {
     range: Range,
     to: u64,
@@ -16,6 +34,25 @@ impl Mapper {
             Some(value - self.range.start + self.to)
         } else {
             None
+        }
+    }
+}
+
+impl FromStr for Mapper {
+    type Err = std::io::Error;
+
+    fn from_str(line: &str) -> Result<Self, Self::Err> {
+        if let Some((to, from, size)) = line
+            .split_whitespace()
+            .filter_map(|x| x.parse::<u64>().ok())
+            .collect_tuple()
+        {
+            Ok(Self::new(from..from + size, to))
+        } else {
+            Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("Invalid line: {line}"),
+            ))
         }
     }
 }
@@ -74,14 +111,7 @@ fn read<'a>(lines: impl Iterator<Item = &'a str>) -> (Vec<u64>, AllMappers) {
             if line.is_empty() {
                 break;
             }
-            let mut parts = line.split_whitespace();
-            let to = parts.next().unwrap().parse::<u64>().unwrap();
-            let from = parts.next().unwrap().parse::<u64>().unwrap();
-            let size = parts.next().unwrap().parse::<u64>().unwrap();
-            mappers.mappers.push(Mapper {
-                range: (from..from + size),
-                to,
-            });
+            mappers.mappers.push(line.parse().unwrap());
         }
         all_mappers.mappers.push(mappers);
     }

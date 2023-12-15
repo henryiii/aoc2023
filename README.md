@@ -5,6 +5,10 @@ year to learn Rust. I'm not trying to be fast and place on the leaderboards
 (which also require working at midnight, which I'm mostly not interested in
 doing), I'm trying to be somewhat elegant and learn new things in Rust.
 
+I highly recommend loading this up in a good editor, like Visual Studio Code or
+VIM with the ALE plugin. It will add type information to all inferred types,
+autocomplete, show documentation, etc.
+
 ## Formatting and linting
 
 Use:
@@ -39,7 +43,7 @@ cargo run -r --bin 01
 
 ## Docs
 
-Some problems have docs, build with:
+You can build with:
 
 ```bash
 cargo docs --no-deps
@@ -72,4 +76,4 @@ A few of the crates I'm using or have used:
 - `strum`: Powerful enum tools like conversion with strings & iteration over enums
 - `indexmap`: Ordered map
 
-I added some documentation to 13 to try `cargo doc`.
+I added fairly extensive docs to `13` to try `cargo doc`.
