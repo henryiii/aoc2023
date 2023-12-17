@@ -8,18 +8,17 @@ I might rewrite this to use some custom traits to make it simpler.
 
 */
 
-use std::collections::HashMap;
-
 use derive_more::Constructor;
 use grid::Grid;
-use strum::{EnumIter, EnumString, IntoEnumIterator};
+use strum::EnumString;
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, EnumIter)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[repr(u8)]
 enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
+    Up = 0x01,
+    Down = 0x02,
+    Left = 0x04,
+    Right = 0x08,
 }
 
 #[derive(Debug, Constructor, Copy, Clone)]
@@ -121,21 +120,16 @@ fn parse(text: &str) -> Grid<Tiles> {
     Grid::from_vec(grid, text.lines().next().unwrap().len())
 }
 
-fn path(
-    grid: &Grid<Tiles>,
-    pos: &Position,
-    dir: Direction,
-    energized: &mut HashMap<Direction, Grid<bool>>,
-) {
+fn path(grid: &Grid<Tiles>, pos: &Position, dir: Direction, energized: &mut Grid<u8>) {
     use Next::{Double, Single};
     let mut pos = *pos;
     let mut dir = dir;
     // loop here
     loop {
-        if energized[&dir][pos.into()] {
+        if energized[pos.into()] & dir as u8 != 0 {
             break;
         }
-        energized.get_mut(&dir).unwrap()[pos.into()] = true;
+        energized[pos.into()] |= dir as u8;
         let tile: Tiles = grid[pos.into()];
         match tile.next(dir) {
             Single(d) => {
@@ -162,20 +156,13 @@ fn path(
 }
 
 fn count_energize(grid: &Grid<Tiles>, pos: &Position, dir: Direction) -> usize {
-    let mut energized = HashMap::new();
-    for dir in Direction::iter() {
-        energized.insert(dir, Grid::new(grid.rows(), grid.cols()));
-    }
+    let mut energized = Grid::new(grid.rows(), grid.cols());
     path(grid, pos, dir, &mut energized);
 
     let mut total = 0;
     for y in 0..grid.rows() {
         for x in 0..grid.cols() {
-            let count = usize::from(energized[&Direction::Up][(y, x)])
-                + usize::from(energized[&Direction::Down][(y, x)])
-                + usize::from(energized[&Direction::Left][(y, x)])
-                + usize::from(energized[&Direction::Right][(y, x)]);
-            total += usize::from(count > 0);
+            total += usize::from(energized[(y, x)] > 0);
         }
     }
     total
