@@ -7,7 +7,7 @@ This is a poker-like game, just simpler. I'm using `strum` to handle the cards
 as an enum (see history for a pure struct implementation, also the removed
 `07b`).  This is the simpler version with a single set of cards - in 07-trait,
 I've implemented a Card trait and two types of cards in order to handle the
-rules for different games.  That's much more intersting Rust, so I'd suggest
+rules for different games.  That's much more interesting Rust, so I'd suggest
 looking at that one next.
 
 To compute the hand level, I'm using a `HashMap`. In Python, I'd have used a

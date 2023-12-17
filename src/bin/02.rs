@@ -9,7 +9,7 @@ simplify (pretty much fully replace) the impl blocks. I'm also implementing the
 `FromStr` trait to convert from a string to my Meas struct.
 
 I'm also doing some error handling here (see history for different version, also
-with error hanlding). It was rather forced on me by the `FromStr` trait, but I
+with error handling). It was rather forced on me by the `FromStr` trait, but I
 think it's a good idea to get used to it instead of simply unwrapping all the
 time. Which I'm going to most of the time, since these are controlled inputs.
 

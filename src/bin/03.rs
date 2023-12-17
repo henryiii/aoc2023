@@ -5,7 +5,7 @@
 
 This creates a grid of numbers and gears, stored as pairs. It uses a buffered
 file reader, which reads the file a line at a time (not required, as the file
-isn't that large, but interesting). The implentation is mostly in the struct's
+isn't that large, but interesting). The implementation is mostly in the struct's
 impl block. The struct is mostly just for passing values around together,
 though.
 */

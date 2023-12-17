@@ -3,10 +3,15 @@
 
 <https://adventofcode.com/2023/day/16>
 
-This is currently a bit messy. Some features in Grid would make itgit  much nicer.
-I might rewrite this to use some custom traits to make it simpler.
+The first version was a bit messy. This version adds a trait to the grid that
+adds `checked_get` which returns an `Option<&T>`` given a `Position``, with isize
+coords. Once/if this gets added to the `grid`` crate, this can be removed.
 
+It also makes `Direction` support being used like a bitflag, so that the `HashMap`
+in the original version is avoided.
 */
+
+use core::ops::Add;
 
 use derive_more::Constructor;
 use grid::Grid;
@@ -22,43 +27,40 @@ enum Direction {
 }
 
 #[derive(Debug, Constructor, Copy, Clone)]
-struct Position {
-    row: usize,
-    col: usize,
-    max_row: usize,
-    max_col: usize,
-}
+struct Position(isize, isize);
 
-impl Position {
-    fn step(&self, dir: Direction) -> Option<Self> {
-        let newpos = match dir {
-            Direction::Up => Self::new(
-                self.row.checked_sub(1)?,
-                self.col,
-                self.max_row,
-                self.max_col,
-            ),
-            Direction::Down => Self::new(self.row + 1, self.col, self.max_row, self.max_col),
-            Direction::Left => Self::new(
-                self.row,
-                self.col.checked_sub(1)?,
-                self.max_row,
-                self.max_col,
-            ),
-            Direction::Right => Self::new(self.row, self.col + 1, self.max_row, self.max_col),
-        };
-        if newpos.row >= self.max_row || newpos.col >= self.max_col {
-            None
-        } else {
-            Some(newpos)
+impl Add<Direction> for Position {
+    type Output = Self;
+
+    fn add(self, dir: Direction) -> Self {
+        use Direction::{Down, Left, Right, Up};
+
+        match dir {
+            Up => Self(self.0 - 1, self.1),
+            Down => Self(self.0 + 1, self.1),
+            Left => Self(self.0, self.1 - 1),
+            Right => Self(self.0, self.1 + 1),
         }
     }
 }
 
-#[allow(clippy::from_over_into)]
-impl Into<(usize, usize)> for Position {
-    fn into(self) -> (usize, usize) {
-        (self.row, self.col)
+impl TryFrom<Position> for (usize, usize) {
+    type Error = std::num::TryFromIntError;
+
+    fn try_from(pos: Position) -> Result<Self, Self::Error> {
+        Ok((usize::try_from(pos.0)?, usize::try_from(pos.1)?))
+    }
+}
+
+trait CheckedGet<T> {
+    fn checked_get(&self, pos: Position) -> Option<&T>;
+}
+
+impl<T> CheckedGet<T> for Grid<T> {
+    fn checked_get(&self, pos: Position) -> Option<&T> {
+        let y = usize::try_from(pos.0).ok()?;
+        let x = usize::try_from(pos.1).ok()?;
+        self.get(y, x)
     }
 }
 
@@ -126,14 +128,15 @@ fn path(grid: &Grid<Tiles>, pos: &Position, dir: Direction, energized: &mut Grid
     let mut dir = dir;
     // loop here
     loop {
-        if energized[pos.into()] & dir as u8 != 0 {
+        if energized[pos.try_into().unwrap()] & dir as u8 != 0 {
             break;
         }
-        energized[pos.into()] |= dir as u8;
-        let tile: Tiles = grid[pos.into()];
+        energized[pos.try_into().unwrap()] |= dir as u8;
+        let tile: Tiles = grid[pos.try_into().unwrap()];
         match tile.next(dir) {
             Single(d) => {
-                if let Some(newpos) = pos.step(d) {
+                let newpos = pos + d;
+                if grid.checked_get(newpos).is_some() {
                     dir = d;
                     pos = newpos;
                 } else {
@@ -141,12 +144,14 @@ fn path(grid: &Grid<Tiles>, pos: &Position, dir: Direction, energized: &mut Grid
                 }
             }
             Double((d1, d2)) => {
-                if let Some(newpos) = pos.step(d2) {
-                    path(grid, &newpos, d2, energized);
+                let pos1 = pos + d1;
+                let pos2 = pos + d2;
+                if grid.checked_get(pos2).is_some() {
+                    path(grid, &pos2, d2, energized);
                 }
-                if let Some(newpos) = pos.step(d1) {
+                if grid.checked_get(pos1).is_some() {
                     dir = d1;
-                    pos = newpos;
+                    pos = pos1;
                 } else {
                     break;
                 }
@@ -170,7 +175,7 @@ fn count_energize(grid: &Grid<Tiles>, pos: &Position, dir: Direction) -> usize {
 
 fn compute1(text: &str) -> usize {
     let grid = parse(text);
-    let pos = Position::new(0, 0, grid.rows(), grid.cols());
+    let pos = Position(0, 0);
     let dir = Direction::Right;
     count_energize(&grid, &pos, dir)
 }
@@ -178,27 +183,19 @@ fn compute1(text: &str) -> usize {
 fn compute2(text: &str) -> usize {
     let grid = parse(text);
     let mut max = 0;
-    for i in 0..(grid.rows()) {
+    for i in 0..(isize::try_from(grid.rows()).unwrap()) {
+        max = max.max(count_energize(&grid, &Position(i, 0), Direction::Right));
         max = max.max(count_energize(
             &grid,
-            &Position::new(i, 0, grid.rows(), grid.cols()),
-            Direction::Right,
-        ));
-        max = max.max(count_energize(
-            &grid,
-            &Position::new(i, grid.rows() - 1, grid.rows(), grid.cols()),
+            &Position(i, isize::try_from(grid.rows()).unwrap() - 1),
             Direction::Left,
         ));
     }
-    for i in 0..(grid.cols()) {
+    for i in 0..(isize::try_from(grid.cols()).unwrap()) {
+        max = max.max(count_energize(&grid, &Position(0, i), Direction::Down));
         max = max.max(count_energize(
             &grid,
-            &Position::new(0, i, grid.rows(), grid.cols()),
-            Direction::Down,
-        ));
-        max = max.max(count_energize(
-            &grid,
-            &Position::new(grid.cols() - 1, i, grid.rows(), grid.cols()),
+            &Position(isize::try_from(grid.cols()).unwrap() - 1, i),
             Direction::Up,
         ));
     }

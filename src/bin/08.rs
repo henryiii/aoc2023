@@ -5,7 +5,7 @@
 
 
 This is a maze. For some reason, part two has a weird structure in the data that
-I finally discoved and exploited; otherwise, the solution is much harder. I'm
+I finally discovered and exploited; otherwise, the solution is much harder. I'm
 now using regex to parse the input.
 */
 
