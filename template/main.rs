@@ -20,7 +20,7 @@ fn main() {
     let result = compute1(&text);
     println!("First = {result}");
 
-    let second_result = compute2(&text);
+    let result = compute2(&text);
     println!("Second = {result}");
 }
 
@@ -38,7 +38,7 @@ mod tests {
     }
 
     #[test]
-    fn test_first() {
+    fn test_second() {
         let result = compute2(INPUT);
         assert_eq!(result, 0);
     }
