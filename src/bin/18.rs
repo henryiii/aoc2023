@@ -1,5 +1,5 @@
 /*!
-# 2023 Day 18 - Diggers
+# 2023 Day 18 - Digging a border
 
 <https://adventofcode.com/2023/day/18>
 
@@ -11,7 +11,10 @@ can get the total enclosed area.  You also need the parimeter, which is 1/2
 already acounted for by the area. Corner pieces are 3/4 uncounted, so we need an
 extra 1/4 for each of the four corners required to make the loop. (Any inner
 corners are canceled out by the extra outer corners required.)
-Python solution from my phone (Pythonista):
+
+The original solution matched the Python version (see history). A cleaner
+solution using functional programming and regex is currently implemented here.
+The Python solution from my phone (Pythonista):
 
 ```python
 directions = [(x.split()[0], int(x.split()[1])) for x in txt.splitlines()]
@@ -44,53 +47,43 @@ print(get_area(directions2))
 
 */
 
-use itertools::Itertools;
+use regex::Regex;
 
 fn read_directions(text: &str) -> Vec<(char, i64)> {
-    text.lines()
-        .map(|x| {
-            let parts = x.split_whitespace();
-            let (dir, len, _) = parts.collect_tuple().unwrap();
-            (dir.chars().next().unwrap(), len.parse().unwrap())
+    let regex = Regex::new(r"(?m)^([RLDU]) ([[:digit:]]+)").unwrap();
+    regex
+        .captures_iter(text)
+        .map(|cap| {
+            let (_, [digit, number]) = cap.extract();
+            (digit.chars().next().unwrap(), number.parse().unwrap())
         })
         .collect()
 }
 
 fn read_directions_2(text: &str) -> Vec<(char, i64)> {
-    text.lines()
-        .map(|x| {
-            let parts = x.split_whitespace();
-            let (_, _, hexstr) = parts.collect_tuple().unwrap();
-            let hexstr = &hexstr[2..hexstr.len() - 1];
-            let d_int = hexstr.chars().last().unwrap().to_digit(16).unwrap();
-            let dir = ['R', 'D', 'L', 'U'][d_int as usize];
-            let hex = i64::from_str_radix(&hexstr[..hexstr.len() - 1], 16).unwrap();
+    let regex = Regex::new(r"(?m)\(\#([[:xdigit:]]{5})([0-3])\)$").unwrap();
+    regex
+        .captures_iter(text)
+        .map(|cap| {
+            let (_, [hexstr, d]) = cap.extract();
+            let d_int = usize::from_str_radix(d, 16).unwrap();
+            let dir = ['R', 'D', 'L', 'U'][d_int];
+            let hex = i64::from_str_radix(hexstr, 16).unwrap();
             (dir, hex)
         })
         .collect()
 }
 
 fn get_area(dirs: &[(char, i64)]) -> i64 {
-    let mut area = 0;
-    let mut p = 0;
-    let mut loc = [0, 0];
-    for (d, l) in dirs {
-        p += l;
-        match d {
-            'R' => loc[1] += l,
-            'L' => loc[1] -= l,
-            'D' => {
-                area += loc[1] * l;
-                loc[0] += l;
-            }
-            'U' => {
-                area -= loc[1] * l;
-                loc[0] -= l;
-            }
-            _ => panic!("Got {d}, expected R, L, D, or U"),
-        }
-    }
-    area + p / 2 + 1
+    let perimiter: i64 = dirs.iter().map(|(_, l)| l).sum();
+    let (area, _, _) = dirs.iter().fold((0, 0, 0), |(a, y, x), (d, l)| match d {
+        'R' => (a, y, x + l),
+        'L' => (a, y, x - l),
+        'D' => (a + x * l, y + l, x),
+        'U' => (a - x * l, y - l, x),
+        _ => panic!("Got {d}, expected R, L, D, or U"),
+    });
+    area + perimiter / 2 + 1
 }
 
 fn compute(text: &str) -> i64 {
