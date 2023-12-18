@@ -31,12 +31,8 @@ jobs:
       - name: Build docs
         run: cargo doc --no-deps --workspace
       - run: echo "<meta http-equiv=\"refresh\" content=\"0; url=aoc2023\">" > target/doc/index.html
-      - run: rm target/doc/.lock
-      - name: Fix permissions
-        run: |
-          chmod -c -R +rX "_site/" | while read line; do
-            echo "::warning title=Invalid file permissions automatically fixed::$line"
-          done
+      - name: Remove file with bad permissions
+        run: rm target/doc/.lock
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
