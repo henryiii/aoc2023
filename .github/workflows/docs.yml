@@ -30,12 +30,17 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build docs
         run: cargo doc --no-deps --workspace
-      - run: echo "<meta http-equiv=\"refresh\" content=\"0; url={CRATE_NAME}\">" > target/doc/index.html
-      - run: cp -r target/doc ./docs
+      - run: echo "<meta http-equiv=\"refresh\" content=\"0; url=aoc2023\">" > target/doc/index.html
+      - run: rm target/doc/.lock
+      - name: Fix permissions
+        run: |
+          chmod -c -R +rX "_site/" | while read line; do
+            echo "::warning title=Invalid file permissions automatically fixed::$line"
+          done
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
-          path: ./docs
+          path: ./target/doc
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v3
