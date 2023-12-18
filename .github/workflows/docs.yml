@@ -9,32 +9,33 @@ concurrency:
   group: "pages"
   cancel-in-progress: true
 
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   docs:
     runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
 
     steps:
+      - uses: Swatinem/rust-cache@v2
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v4
       - uses: actions/checkout@v4
       - name: Build docs
-        run: cargo doc --no-deps
+        run: cargo doc --no-deps --workspace
+      - run: echo "<meta http-equiv=\"refresh\" content=\"0; url={CRATE_NAME}\">" > target/doc/index.html
+      - run: cp -r target/doc ./docs
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
-          path: target/doc
+          path: ./docs
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v3
