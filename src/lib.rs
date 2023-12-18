@@ -20,7 +20,7 @@ pub mod grid_helper {
     use strum::EnumIter;
 
     /// This is a direction. Can be converted to a bitflags-like u8.
-    #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, EnumIter)]
+    #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, EnumIter, PartialOrd, Ord)]
     #[repr(u8)]
     pub enum Direction {
         Up = 0x01,
@@ -60,7 +60,7 @@ pub mod grid_helper {
     /// This is a helper for a signed position. You can add a direction to step
     /// in that direction. You can try convert to a classic (usize, usize)
     /// position.
-    #[derive(Debug, Constructor, Copy, Clone)]
+    #[derive(Debug, Constructor, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
     pub struct Position(isize, isize);
 
     impl Add<Direction> for Position {
@@ -75,6 +75,13 @@ pub mod grid_helper {
                 Left => Self(self.0, self.1 - 1),
                 Right => Self(self.0, self.1 + 1),
             }
+        }
+    }
+    impl Add<Self> for Position {
+        type Output = Self;
+
+        fn add(self, other: Self) -> Self {
+            Self(self.0 + other.0, self.1 + other.1)
         }
     }
 
