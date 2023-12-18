@@ -3,7 +3,8 @@
 I'm trying the [advent of code](https://adventofcode.com/2023) in Rust this
 year to learn Rust. I'm not trying to be fast and place on the leaderboards
 (which also require working at midnight, which I'm mostly not interested in
-doing), I'm trying to be somewhat elegant and learn new things in Rust.
+doing), I'm trying to be somewhat elegant and learn new things in Rust. The
+documentation is [live here](https://henryiii.github.io/aoc2023).
 
 I highly recommend loading this up in a good editor, like Visual Studio Code or
 VIM with the ALE plugin. It will add type information to all inferred types,
@@ -27,6 +28,8 @@ Use:
 ```bash
 cargo test
 ```
+
+Useful flags include `-- --nocapture`.
 
 ## Running
 
@@ -69,11 +72,12 @@ A few of the crates I'm using or have used:
 - `derive-new`: Powerful `new` creation (supports default, unlike `derive_more`'s `Constructor`.
 - `derive_more`: Adds useful derives not part of the stdlib (like Add)
 - `grid`: A simple 2D array library
+- `indexmap`: Ordered map
 - `indicatif`: Progress bars
 - `log`, `env_logger`, `test-log`: logging facilities
 - `num`: Needed `lcm` in a problem.
 - `rayon` (not actively used): Easy multithreading
+- `regex`: Input parsing via regular expressions
 - `strum`: Powerful enum tools like conversion with strings & iteration over enums
-- `indexmap`: Ordered map
 
 I added fairly extensive docs to `13` to try `cargo doc`.

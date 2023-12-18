@@ -9,60 +9,14 @@ coords. Once/if this gets added to the `grid`` crate, this can be removed.
 
 It also makes `Direction` support being used like a bitflag, so that the `HashMap`
 in the original version is avoided.
+
+This version was standalone, but was converted to use the (local) `aoc2023` crate.
 */
 
-use core::ops::Add;
-
-use derive_more::Constructor;
 use grid::Grid;
 use strum::EnumString;
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-#[repr(u8)]
-enum Direction {
-    Up = 0x01,
-    Down = 0x02,
-    Left = 0x04,
-    Right = 0x08,
-}
-
-#[derive(Debug, Constructor, Copy, Clone)]
-struct Position(isize, isize);
-
-impl Add<Direction> for Position {
-    type Output = Self;
-
-    fn add(self, dir: Direction) -> Self {
-        use Direction::{Down, Left, Right, Up};
-
-        match dir {
-            Up => Self(self.0 - 1, self.1),
-            Down => Self(self.0 + 1, self.1),
-            Left => Self(self.0, self.1 - 1),
-            Right => Self(self.0, self.1 + 1),
-        }
-    }
-}
-
-impl TryFrom<Position> for (usize, usize) {
-    type Error = std::num::TryFromIntError;
-
-    fn try_from(pos: Position) -> Result<Self, Self::Error> {
-        Ok((usize::try_from(pos.0)?, usize::try_from(pos.1)?))
-    }
-}
-
-trait CheckedGet<T> {
-    fn checked_get(&self, pos: Position) -> Option<&T>;
-}
-
-impl<T> CheckedGet<T> for Grid<T> {
-    fn checked_get(&self, pos: Position) -> Option<&T> {
-        let y = usize::try_from(pos.0).ok()?;
-        let x = usize::try_from(pos.1).ok()?;
-        self.get(y, x)
-    }
-}
+use aoc2023::grid_helper::{CheckedGet, Direction, Position};
 
 #[derive(Debug)]
 enum Next {
@@ -175,7 +129,7 @@ fn count_energize(grid: &Grid<Tiles>, pos: &Position, dir: Direction) -> usize {
 
 fn compute1(text: &str) -> usize {
     let grid = parse(text);
-    let pos = Position(0, 0);
+    let pos = Position::new(0, 0);
     let dir = Direction::Right;
     count_energize(&grid, &pos, dir)
 }
@@ -184,18 +138,22 @@ fn compute2(text: &str) -> usize {
     let grid = parse(text);
     let mut max = 0;
     for i in 0..(isize::try_from(grid.rows()).unwrap()) {
-        max = max.max(count_energize(&grid, &Position(i, 0), Direction::Right));
         max = max.max(count_energize(
             &grid,
-            &Position(i, isize::try_from(grid.rows()).unwrap() - 1),
+            &Position::new(i, 0),
+            Direction::Right,
+        ));
+        max = max.max(count_energize(
+            &grid,
+            &Position::new(i, isize::try_from(grid.rows()).unwrap() - 1),
             Direction::Left,
         ));
     }
     for i in 0..(isize::try_from(grid.cols()).unwrap()) {
-        max = max.max(count_energize(&grid, &Position(0, i), Direction::Down));
+        max = max.max(count_energize(&grid, &Position::new(0, i), Direction::Down));
         max = max.max(count_energize(
             &grid,
-            &Position(isize::try_from(grid.cols()).unwrap() - 1, i),
+            &Position::new(isize::try_from(grid.cols()).unwrap() - 1, i),
             Direction::Up,
         ));
     }

@@ -6,6 +6,8 @@
 This was originally done by hand, but was much better using `strum`, `Grid`,
 etc.  From the beginning, though, I wanted the pretty color map output. It was
 really easy once I started using these crates.
+
+This used to stand-alone, but now uses `Direction` from the (local) `aoc2023` crate.
 */
 
 use derive_more::Constructor;
@@ -13,13 +15,7 @@ use grid::Grid;
 use std::str::FromStr;
 use strum::IntoEnumIterator;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::EnumIter)]
-enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
-}
+use aoc2023::grid_helper::Direction;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, strum::EnumString, strum::Display)]
 enum MapChar {
