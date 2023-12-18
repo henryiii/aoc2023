@@ -75,15 +75,16 @@ fn read_directions_2(text: &str) -> Vec<(char, i64)> {
 }
 
 fn get_area(dirs: &[(char, i64)]) -> i64 {
-    let perimiter: i64 = dirs.iter().map(|(_, l)| l).sum();
-    let (area, _, _) = dirs.iter().fold((0, 0, 0), |(a, y, x), (d, l)| match d {
-        'R' => (a, y, x + l),
-        'L' => (a, y, x - l),
-        'D' => (a + x * l, y + l, x),
-        'U' => (a - x * l, y - l, x),
-        _ => panic!("Got {d}, expected R, L, D, or U"),
-    });
-    area + perimiter / 2 + 1
+    let (perimeter, area, _) = dirs
+        .iter()
+        .fold((0, 0, (0, 0)), |(p, a, (y, x)), (d, l)| match d {
+            'R' => (p + l, a, (y, x + l)),
+            'L' => (p + l, a, (y, x - l)),
+            'D' => (p + l, a + x * l, (y + l, x)),
+            'U' => (p + l, a - x * l, (y - l, x)),
+            _ => panic!("Got {d}, expected R, L, D, or U"),
+        });
+    area + perimeter / 2 + 1
 }
 
 fn compute(text: &str) -> i64 {
