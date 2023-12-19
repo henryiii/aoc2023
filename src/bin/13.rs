@@ -11,13 +11,11 @@ use grid::Grid;
 
 /// Make a block of bools from a string.
 fn make_block(block: &str) -> Grid<bool> {
-    Grid::from_vec(
-        block
-            .lines()
-            .flat_map(|x| x.chars().map(|x| x == '#'))
-            .collect(),
-        block.lines().take(1).collect::<Vec<&str>>()[0].len(),
-    )
+    block
+        .lines()
+        .map(|x| x.chars().map(|x| x == '#').collect())
+        .collect::<Vec<_>>()
+        .into()
 }
 
 /// Compare around a y mirror line. If you need to compare around x, transpose

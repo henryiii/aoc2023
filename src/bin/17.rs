@@ -45,12 +45,10 @@ impl PartialOrd for State {
 }
 
 fn read_grid(text: &str) -> Grid<usize> {
-    let vals: Vec<usize> = text
-        .lines()
-        .flat_map(|x| x.chars().map(|x| x.to_string().parse().unwrap()))
-        .collect();
-
-    Grid::from_vec(vals, text.lines().next().unwrap().len())
+    text.lines()
+        .map(|x| x.chars().map(|x| x.to_string().parse().unwrap()).collect())
+        .collect::<Vec<_>>()
+        .into()
 }
 
 fn compute_path(grid: &Grid<usize>, min_path: usize, max_path: usize) -> Option<usize> {

@@ -37,12 +37,14 @@ enum Direction {
 }
 
 fn read_data(text: &str) -> Grid<Map> {
-    Grid::from_vec(
-        text.lines()
-            .flat_map(|x| x.chars().map(|c| Map::from_str(&c.to_string()).unwrap()))
-            .collect::<Vec<_>>(),
-        text.lines().next().unwrap().len(),
-    )
+    text.lines()
+        .map(|x| {
+            x.chars()
+                .map(|c| Map::from_str(&c.to_string()).unwrap())
+                .collect()
+        })
+        .collect::<Vec<_>>()
+        .into()
 }
 
 #[cfg(test)]

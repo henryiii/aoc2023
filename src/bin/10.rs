@@ -187,15 +187,15 @@ fn is_inside(grid: &Grid<MapChar>, mask: &Grid<bool>, loc: &(usize, usize)) -> b
 }
 
 fn compute_and_print_grid(strs: &[&str]) -> (usize, usize) {
-    let grid = Grid::from_vec(
-        strs.iter()
-            .flat_map(|x| {
-                x.chars()
-                    .map(|x| MapChar::from_str(&x.to_string()).unwrap())
-            })
-            .collect(),
-        strs[0].len(),
-    );
+    let grid: Grid<MapChar> = strs
+        .iter()
+        .map(|x| {
+            x.chars()
+                .map(|x| MapChar::from_str(&x.to_string()).unwrap())
+                .collect()
+        })
+        .collect::<Vec<_>>()
+        .into();
     let mut mask: Grid<bool> = Grid::new(grid.rows(), grid.cols());
     let mut inside: Grid<bool> = Grid::new(grid.rows(), grid.cols());
 

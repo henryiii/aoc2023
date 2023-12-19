@@ -65,15 +65,14 @@ impl Tiles {
 }
 
 fn parse(text: &str) -> Grid<Tiles> {
-    let grid: Vec<Tiles> = text
-        .lines()
-        .flat_map(|line| {
+    text.lines()
+        .map(|line| {
             line.chars()
                 .map(|x| x.to_string().parse::<Tiles>().unwrap())
+                .collect()
         })
-        .collect();
-
-    Grid::from_vec(grid, text.lines().next().unwrap().len())
+        .collect::<Vec<_>>()
+        .into()
 }
 
 fn path(grid: &Grid<Tiles>, pos: &Position, dir: Direction, energized: &mut Grid<u8>) {
