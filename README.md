@@ -54,11 +54,11 @@ cargo docs --no-deps
 
 ## Notes
 
-This is mostly one file per project. I'm not worrying about visibility or nice
-error handling since these are one-shot "scripts". I even played with the script
-feature in the nightlies (`01` supports it), but I wanted `cargo fmt` and
-`cargo clippy` (and then `cargo test`), so I went with the classic project-based
-approach.
+This is mostly one file per project, with a few shared helpers on a small
+number of days. I'm not worrying about visibility or nice error handling since
+these are one-shot "scripts". I even played with the script feature in the
+nightlies (`01` supports it), but I wanted `cargo fmt` and `cargo clippy` (and
+then `cargo test`), so I went with the classic project-based approach.
 
 Features used in each vary. For example, `05` has an optional progress bar
 (opt-out). Over time, I've been cleaning up the older problems based on what

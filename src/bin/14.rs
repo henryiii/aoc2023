@@ -5,9 +5,7 @@
 
 Implementing this in a single function with a direction required working with
 the grid library quite a bit. I think something like `iter_rows_mut` would have
-been helpful, but it worked out pretty nicely. It would also be nicer if grids
-could be hashed, as a `HashSet` would be nicer than a Vec; I've contributed that
-upstream in a PR.
+been helpful, but it worked out pretty nicely.
 
 Continuing to enjoy enums with `strum`'s additions.
 */
