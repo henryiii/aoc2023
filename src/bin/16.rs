@@ -16,7 +16,7 @@ This version was standalone, but was converted to use the (local) `aoc2023` crat
 use grid::Grid;
 use strum::EnumString;
 
-use aoc2023::grid_helper::{CheckedGet, Direction, Position};
+use aoc2023::grid_helper::{Direction, Position};
 
 #[derive(Debug)]
 enum Next {
@@ -82,15 +82,15 @@ fn path(grid: &Grid<Tiles>, pos: &Position, dir: Direction, energized: &mut Grid
     let mut dir = dir;
     // loop here
     loop {
-        if energized[pos.try_into().unwrap()] & dir as u8 != 0 {
+        if energized[pos] & dir as u8 != 0 {
             break;
         }
-        energized[pos.try_into().unwrap()] |= dir as u8;
-        let tile: Tiles = grid[pos.try_into().unwrap()];
+        energized[pos] |= dir as u8;
+        let tile: Tiles = grid[pos];
         match tile.next(dir) {
             Single(d) => {
                 let newpos = pos + d;
-                if grid.checked_get(newpos).is_some() {
+                if grid.get(newpos.row(), newpos.col()).is_some() {
                     dir = d;
                     pos = newpos;
                 } else {
@@ -100,10 +100,10 @@ fn path(grid: &Grid<Tiles>, pos: &Position, dir: Direction, energized: &mut Grid
             Double((d1, d2)) => {
                 let pos1 = pos + d1;
                 let pos2 = pos + d2;
-                if grid.checked_get(pos2).is_some() {
+                if grid.get(pos2.row(), pos2.col()).is_some() {
                     path(grid, &pos2, d2, energized);
                 }
-                if grid.checked_get(pos1).is_some() {
+                if grid.get(pos1.row(), pos1.col()).is_some() {
                     dir = d1;
                     pos = pos1;
                 } else {

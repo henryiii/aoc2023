@@ -13,7 +13,7 @@ A few problems use repeated items, so those are provided here.
 This has helpers for 2D problems.
 */
 pub mod grid_helper {
-    use core::ops::Add;
+    use core::ops::{Add, Index, IndexMut};
 
     use derive_more::Constructor;
     use grid::Grid;
@@ -63,6 +63,19 @@ pub mod grid_helper {
     #[derive(Debug, Constructor, Copy, Clone, PartialEq, Eq, Hash, PartialOrd, Ord)]
     pub struct Position(isize, isize);
 
+    impl Position {
+        /// The row of this position, signed.
+        #[must_use]
+        pub const fn row(&self) -> isize {
+            self.0
+        }
+        /// The column of this position, signed.
+        #[must_use]
+        pub const fn col(&self) -> isize {
+            self.1
+        }
+    }
+
     impl Add<Direction> for Position {
         type Output = Self;
 
@@ -99,20 +112,24 @@ pub mod grid_helper {
         }
     }
 
-    /// This trait is for getting a value from a grid, but returning None if the
-    /// position is out of bounds. Unlike `grid::Grid::get`, this takes signed
-    /// integers. This might be fixed upstream soon in
-    /// <https://github.com/becheran/grid/pull/41>.
-    pub trait CheckedGet<T> {
-        fn checked_get(&self, pos: impl TryInto<(isize, isize)>) -> Option<&T>;
+    /// Panics if the position is out of bounds.
+    impl<T> Index<Position> for Grid<T> {
+        type Output = T;
+
+        fn index(&self, pos: Position) -> &Self::Output {
+            &self[(
+                usize::try_from(pos.0).unwrap(),
+                usize::try_from(pos.1).unwrap(),
+            )]
+        }
     }
 
-    impl<T> CheckedGet<T> for Grid<T> {
-        fn checked_get(&self, pos: impl TryInto<(isize, isize)>) -> Option<&T> {
-            let pos = pos.try_into().ok()?;
-            let y = usize::try_from(pos.0).ok()?;
-            let x = usize::try_from(pos.1).ok()?;
-            self.get(y, x)
+    impl<T> IndexMut<Position> for Grid<T> {
+        fn index_mut(&mut self, pos: Position) -> &mut Self::Output {
+            &mut self[(
+                usize::try_from(pos.0).unwrap(),
+                usize::try_from(pos.1).unwrap(),
+            )]
         }
     }
 }
