@@ -3,14 +3,15 @@
 
 <https://adventofcode.com/2023/day/19>
 
-This uses structs and enums to represent the rules and workflows.
-
+This uses structs and enums to represent the rules and workflows. I'm using
+`intervalium` (provides `gcollections` and `interval`) to properly represent
+intervals (could have been done on day 5 as well).
 */
 
 use gcollections::ops::{set::Intersection, Cardinality, Difference};
 use interval::{interval_set::ToIntervalSet, IntervalSet};
 use regex::{Regex, RegexBuilder};
-use std::{collections::HashMap, str::FromStr};
+use std::{collections::HashMap, ops::Index, str::FromStr};
 use strum::EnumString;
 
 #[derive(Debug, EnumString, PartialEq, Eq, Hash, Copy, Clone)]
@@ -30,6 +31,19 @@ struct Part {
     s: u64,
 }
 
+impl Index<Cat> for Part {
+    type Output = u64;
+
+    fn index(&self, cat: Cat) -> &Self::Output {
+        match cat {
+            Cat::X => &self.x,
+            Cat::M => &self.m,
+            Cat::A => &self.a,
+            Cat::S => &self.s,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 struct PartRange {
     x: IntervalSet<u64>,
@@ -44,6 +58,55 @@ impl PartRange {
             * self.m.iter().map(Cardinality::size).sum::<u64>()
             * self.a.iter().map(Cardinality::size).sum::<u64>()
             * self.s.iter().map(Cardinality::size).sum::<u64>()
+    }
+
+    fn with_cat(&self, cat: Cat, interval: IntervalSet<u64>) -> Self {
+        match cat {
+            Cat::X => Self {
+                x: interval,
+                ..self.clone()
+            },
+            Cat::M => Self {
+                m: interval,
+                ..self.clone()
+            },
+            Cat::A => Self {
+                a: interval,
+                ..self.clone()
+            },
+            Cat::S => Self {
+                s: interval,
+                ..self.clone()
+            },
+        }
+    }
+
+    fn split(&self, cat: Cat, comp: Compare) -> (Self, Self) {
+        let range = &self[cat];
+        let rule_range = match comp {
+            Compare::LessThan(n) => vec![(0, n - 1)].to_interval_set(),
+            Compare::GreaterThan(n) => vec![(n + 1, 4000)].to_interval_set(),
+        };
+        let intersection = range.intersection(&rule_range);
+        let rule_ranges = self.with_cat(cat, intersection);
+
+        let remaining = range.difference(&rule_range);
+
+        let parts = self.with_cat(cat, remaining);
+        (rule_ranges, parts)
+    }
+}
+
+impl Index<Cat> for PartRange {
+    type Output = IntervalSet<u64>;
+
+    fn index(&self, cat: Cat) -> &Self::Output {
+        match cat {
+            Cat::X => &self.x,
+            Cat::M => &self.m,
+            Cat::A => &self.a,
+            Cat::S => &self.s,
+        }
     }
 }
 
@@ -65,7 +128,7 @@ impl FromStr for Destination {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 enum Compare {
     LessThan(u64),
     GreaterThan(u64),
@@ -109,16 +172,7 @@ struct Workflow {
 impl Workflow {
     fn next(&self, part: &Part) -> &Destination {
         for rule in &self.rules {
-            if rule.cat == Cat::X && rule.compare.compare(part.x) {
-                return &rule.dest;
-            }
-            if rule.cat == Cat::M && rule.compare.compare(part.m) {
-                return &rule.dest;
-            }
-            if rule.cat == Cat::A && rule.compare.compare(part.a) {
-                return &rule.dest;
-            }
-            if rule.cat == Cat::S && rule.compare.compare(part.s) {
+            if rule.compare.compare(part[rule.cat]) {
                 return &rule.dest;
             }
         }
@@ -226,88 +280,37 @@ fn compute2(text: &str) -> u64 {
     accepted_in_part_range(&workflows, workflows.get("in").unwrap(), parts)
 }
 
+fn compute_destination(
+    workflows: &HashMap<String, Workflow>,
+    parts: PartRange,
+    dest: &Destination,
+) -> u64 {
+    match &dest {
+        Destination::Accept => parts.sum(),
+        Destination::Reject => 0,
+        Destination::Workflow(name) => {
+            accepted_in_part_range(workflows, workflows.get(name).unwrap(), parts)
+        }
+    }
+}
+
 fn accepted_in_part_range(
     workflows: &HashMap<String, Workflow>,
-    wf: &Workflow,
+    workflow: &Workflow,
     parts: PartRange,
 ) -> u64 {
-    let mut parts = parts;
-    let mut total = 0;
-
-    for rule in &wf.rules {
-        let range = match rule.cat {
-            Cat::X => &parts.x,
-            Cat::M => &parts.m,
-            Cat::A => &parts.a,
-            Cat::S => &parts.s,
-        };
-        let rule_range = match rule.compare {
-            Compare::LessThan(n) => vec![(0, n - 1)].to_interval_set(),
-            Compare::GreaterThan(n) => vec![(n + 1, 4000)].to_interval_set(),
-        };
-        let intersection = range.intersection(&rule_range);
-        let rule_ranges = match rule.cat {
-            Cat::X => PartRange {
-                x: intersection,
-                ..parts.clone()
-            },
-            Cat::M => PartRange {
-                m: intersection,
-                ..parts.clone()
-            },
-            Cat::A => PartRange {
-                a: intersection,
-                ..parts.clone()
-            },
-            Cat::S => PartRange {
-                s: intersection,
-                ..parts.clone()
-            },
-        };
-        match &rule.dest {
-            Destination::Accept => {
-                total += rule_ranges.sum();
-            }
-            Destination::Reject => {}
-            Destination::Workflow(name) => {
-                let wf = workflows.get(name).unwrap();
-                total += accepted_in_part_range(workflows, wf, rule_ranges);
-            }
-        }
-
-        let remaining = range.difference(&rule_range);
-
-        parts = match rule.cat {
-            Cat::X => PartRange {
-                x: remaining,
-                ..parts.clone()
-            },
-            Cat::M => PartRange {
-                m: remaining,
-                ..parts.clone()
-            },
-            Cat::A => PartRange {
-                a: remaining,
-                ..parts.clone()
-            },
-            Cat::S => PartRange {
-                s: remaining,
-                ..parts.clone()
-            },
-        };
-    }
-
-    match &wf.dest {
-        Destination::Accept => {
-            total += parts.sum();
-        }
-        Destination::Reject => {}
-        Destination::Workflow(name) => {
-            let wf = workflows.get(name).unwrap();
-            total += accepted_in_part_range(workflows, wf, parts);
-        }
-    }
-    total
+    let (untouched_parts, total) =
+        workflow
+            .rules
+            .iter()
+            .fold((parts, 0), |(parts, total), rule| {
+                let (rule_ranges, remaining) = parts.split(rule.cat, rule.compare);
+                (
+                    remaining,
+                    total + compute_destination(workflows, rule_ranges, &rule.dest),
+                )
+            });
+    total + compute_destination(workflows, untouched_parts, &workflow.dest)
 }
 
 fn main() {
