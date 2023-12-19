@@ -4,7 +4,7 @@
 <https://adventofcode.com/2023/day/19>
 
 This uses structs and enums to represent the rules and workflows. I'm using
-`intervalium` (provides `gcollections` and `interval`) to properly represent
+`intervalium` (provides `interval`) and `gcollections` to properly represent
 intervals (could have been done on day 5 as well).
 */
 
@@ -29,6 +29,12 @@ struct Part {
     m: u64,
     a: u64,
     s: u64,
+}
+
+impl Part {
+    const fn sum(&self) -> u64 {
+        self.x + self.m + self.a + self.s
+    }
 }
 
 impl Index<Cat> for Part {
@@ -260,7 +266,7 @@ fn compute1(text: &str) -> u64 {
             loop {
                 let dest = wf.next(p);
                 match dest {
-                    Destination::Accept => return p.x + p.m + p.a + p.s,
+                    Destination::Accept => return p.sum(),
                     Destination::Reject => return 0,
                     Destination::Workflow(name) => wf = workflows.get(name).unwrap(),
                 }

@@ -8,17 +8,17 @@ cached = "*"
 derive-new = "*"
 derive_more = "*"
 env_logger = "*"
+gcollections = "*"
 grid = "*"
+indexmap = "*"
 indicatif = {version = "*", optional=true}
+intervallum = "*"
 itertools = "*"
 log = "*"
 num = "*"
 regex = "*"
 strum = { version = "*", features = ["derive"] }
 test-log = "*"
-indexmap = "*"
-intervallum = "*"
-gcollections = "*"
 
 [features]
 default = ["progressbar"]
