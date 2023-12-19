@@ -6,8 +6,8 @@
 
 Credit to <https://www.youtube.com/watch?v=2pDSooPLLkI> for helping point me
 toward Dijkstra's algorithm. And
-<https://doc.rust-lang.org/std/collections/binary_heap/index.html> for nearly a
-great example.
+<https://doc.rust-lang.org/std/collections/binary_heap/index.html> for a great
+example of the algorithm to base it on..
 */
 
 use std::collections::BinaryHeap;
@@ -79,7 +79,7 @@ fn compute_path(grid: &Grid<usize>, min_path: usize, max_path: usize) -> Option<
         if position == goal {
             return Some(cost);
         }
-        if !computed.insert((cost, position, direction, len)) {
+        if !computed.insert((position, direction, len)) {
             continue;
         }
         let directions = vec![
@@ -110,7 +110,7 @@ fn compute_path(grid: &Grid<usize>, min_path: usize, max_path: usize) -> Option<
             }
             if new_len <= max_path {
                 let prev_cost = *dist.get(next.row(), next.col()).unwrap();
-                if prev_cost == 0 || new_cost < prev_cost + 20 {
+                if prev_cost == 0 || new_cost < prev_cost + 9 * min_path {
                     heap.push(State {
                         cost: new_cost,
                         position: next,

@@ -106,12 +106,6 @@ pub mod grid_helper {
         }
     }
 
-    impl From<Position> for (isize, isize) {
-        fn from(pos: Position) -> Self {
-            (pos.0, pos.1)
-        }
-    }
-
     /// Panics if the position is out of bounds.
     impl<T> Index<Position> for Grid<T> {
         type Output = T;
@@ -124,6 +118,7 @@ pub mod grid_helper {
         }
     }
 
+    /// Panics if the position is out of bounds.
     impl<T> IndexMut<Position> for Grid<T> {
         fn index_mut(&mut self, pos: Position) -> &mut Self::Output {
             &mut self[(
