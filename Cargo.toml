@@ -17,6 +17,8 @@ regex = "*"
 strum = { version = "*", features = ["derive"] }
 test-log = "*"
 indexmap = "*"
+intervallum = "*"
+gcollections = "*"
 
 [features]
 default = ["progressbar"]

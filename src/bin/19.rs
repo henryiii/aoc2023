@@ -7,6 +7,8 @@ This uses structs and enums to represent the rules and workflows.
 
 */
 
+use gcollections::ops::{set::Intersection, Cardinality, Difference};
+use interval::{interval_set::ToIntervalSet, IntervalSet};
 use regex::{Regex, RegexBuilder};
 use std::{collections::HashMap, str::FromStr};
 use strum::EnumString;
@@ -26,6 +28,23 @@ struct Part {
     m: u64,
     a: u64,
     s: u64,
+}
+
+#[derive(Debug, Clone)]
+struct PartRange {
+    x: IntervalSet<u64>,
+    m: IntervalSet<u64>,
+    a: IntervalSet<u64>,
+    s: IntervalSet<u64>,
+}
+
+impl PartRange {
+    fn sum(&self) -> u64 {
+        self.x.iter().map(Cardinality::size).sum::<u64>()
+            * self.m.iter().map(Cardinality::size).sum::<u64>()
+            * self.a.iter().map(Cardinality::size).sum::<u64>()
+            * self.s.iter().map(Cardinality::size).sum::<u64>()
+    }
 }
 
 #[derive(Debug)]
@@ -196,8 +215,99 @@ fn compute1(text: &str) -> u64 {
         .sum()
 }
 
-const fn compute2(_text: &str) -> u64 {
-    0
+fn compute2(text: &str) -> u64 {
+    let (workflows, _) = read_both(text);
+    let parts = PartRange {
+        x: vec![(1, 4000)].to_interval_set(),
+        m: vec![(1, 4000)].to_interval_set(),
+        a: vec![(1, 4000)].to_interval_set(),
+        s: vec![(1, 4000)].to_interval_set(),
+    };
+    accepted_in_part_range(&workflows, workflows.get("in").unwrap(), parts)
+}
+
+fn accepted_in_part_range(
+    workflows: &HashMap<String, Workflow>,
+    wf: &Workflow,
+    parts: PartRange,
+) -> u64 {
+    let mut parts = parts;
+    let mut total = 0;
+
+    for rule in &wf.rules {
+        let range = match rule.cat {
+            Cat::X => &parts.x,
+            Cat::M => &parts.m,
+            Cat::A => &parts.a,
+            Cat::S => &parts.s,
+        };
+        let rule_range = match rule.compare {
+            Compare::LessThan(n) => vec![(0, n - 1)].to_interval_set(),
+            Compare::GreaterThan(n) => vec![(n + 1, 4000)].to_interval_set(),
+        };
+        let intersection = range.intersection(&rule_range);
+        let rule_ranges = match rule.cat {
+            Cat::X => PartRange {
+                x: intersection,
+                ..parts.clone()
+            },
+            Cat::M => PartRange {
+                m: intersection,
+                ..parts.clone()
+            },
+            Cat::A => PartRange {
+                a: intersection,
+                ..parts.clone()
+            },
+            Cat::S => PartRange {
+                s: intersection,
+                ..parts.clone()
+            },
+        };
+        match &rule.dest {
+            Destination::Accept => {
+                total += rule_ranges.sum();
+            }
+            Destination::Reject => {}
+            Destination::Workflow(name) => {
+                let wf = workflows.get(name).unwrap();
+                total += accepted_in_part_range(workflows, wf, rule_ranges);
+            }
+        }
+
+        let remaining = range.difference(&rule_range);
+
+        parts = match rule.cat {
+            Cat::X => PartRange {
+                x: remaining,
+                ..parts.clone()
+            },
+            Cat::M => PartRange {
+                m: remaining,
+                ..parts.clone()
+            },
+            Cat::A => PartRange {
+                a: remaining,
+                ..parts.clone()
+            },
+            Cat::S => PartRange {
+                s: remaining,
+                ..parts.clone()
+            },
+        };
+    }
+
+    match &wf.dest {
+        Destination::Accept => {
+            total += parts.sum();
+        }
+        Destination::Reject => {}
+        Destination::Workflow(name) => {
+            let wf = workflows.get(name).unwrap();
+            total += accepted_in_part_range(workflows, wf, parts);
+        }
+    }
+    total
 }
 
 fn main() {
@@ -241,6 +351,6 @@ hdj{m>838:A,pv}
     #[test]
     fn test_second() {
         let result = compute2(INPUT);
-        assert_eq!(result, 0);
+        assert_eq!(result, 167409079868000);
     }
 }
