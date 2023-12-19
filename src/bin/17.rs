@@ -15,7 +15,7 @@ use std::{cmp::Ordering, collections::HashSet};
 
 use grid::Grid;
 
-use aoc2023::grid_helper::{CheckedGet, Direction, Position};
+use aoc2023::grid_helper::{Direction, Position};
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 struct State {
@@ -102,14 +102,14 @@ fn compute_path(grid: &Grid<usize>, min_path: usize, max_path: usize) -> Option<
             let mut new_cost = cost;
             for _ in 0..steps {
                 next = next + dir;
-                if let Some(val) = grid.checked_get(next) {
+                if let Some(val) = grid.get(next.row(), next.col()) {
                     new_cost += val;
                 } else {
                     continue 'dir;
                 }
             }
             if new_len <= max_path {
-                let prev_cost = *dist.checked_get(next).unwrap();
+                let prev_cost = *dist.get(next.row(), next.col()).unwrap();
                 if prev_cost == 0 || new_cost < prev_cost + 20 {
                     heap.push(State {
                         cost: new_cost,
@@ -119,7 +119,7 @@ fn compute_path(grid: &Grid<usize>, min_path: usize, max_path: usize) -> Option<
                     });
                 }
                 if prev_cost == 0 || new_cost < prev_cost {
-                    dist[next.try_into().unwrap()] = new_cost;
+                    dist[next] = new_cost;
                 }
             }
         }
