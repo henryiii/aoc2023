@@ -1,11 +1,17 @@
 /*!
-# 2023 Day 20 - ...
+# 2023 Day 20 - Binary node network
 
 <https://adventofcode.com/2023/day/20>
 
+
+First part is pretty easy, but second part requires a lot of thinking.  Got to
+use RefCell for the first time here.
 */
 
-use std::{cell::RefCell, collections::HashMap};
+use std::{
+    cell::RefCell,
+    collections::{HashMap, HashSet},
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Pulse {
@@ -28,7 +34,7 @@ enum Module<'a> {
     FlipFlop(FlipFlop),
     Conjunction(Conjunction<'a>),
     Broadcaster,
-    Output,
+    Output((usize, usize)),
 }
 
 impl<'a> Module<'a> {
@@ -60,7 +66,14 @@ impl<'a> Module<'a> {
                 })
             }
             Module::Broadcaster => Some(pulse),
-            Module::Output => None,
+            Module::Output(ref mut output) => {
+                if pulse == Pulse::High {
+                    output.0 += 1;
+                } else {
+                    output.1 += 1;
+                }
+                None
+            }
         }
     }
 
@@ -97,7 +110,7 @@ impl<'a> Node<'a> {
 }
 
 fn read_input(text: &str) -> HashMap<&str, Node> {
-    let node_map: HashMap<&str, Node> = text
+    let mut node_map: HashMap<&str, Node> = text
         .lines()
         .map(|line| {
             let (inp, output) = line.split_once(" -> ").unwrap();
@@ -122,12 +135,6 @@ fn read_input(text: &str) -> HashMap<&str, Node> {
                     module: RefCell::new(Module::Broadcaster),
                     output,
                 }
-            } else if inp == "output" {
-                Node {
-                    name: inp,
-                    module: RefCell::new(Module::Output),
-                    output,
-                }
             } else {
                 panic!("Unknown input: {inp}");
             }
@@ -145,6 +152,22 @@ fn read_input(text: &str) -> HashMap<&str, Node> {
             }
         }
     }
+    let all_output_nodes: HashSet<&str> = node_map
+        .values()
+        .flat_map(|n| n.output.iter().copied())
+        .collect();
+    let all_input_nodes: HashSet<&str> = node_map.keys().copied().collect();
+    let output_only_nodes = all_output_nodes.difference(&all_input_nodes);
+    for name in output_only_nodes {
+        node_map.insert(
+            name,
+            Node {
+                name,
+                module: RefCell::new(Module::Output((0, 0))),
+                output: Vec::new(),
+            },
+        );
+    }
     node_map
 }
 
@@ -157,29 +180,21 @@ fn compute_press(node_map: &HashMap<&str, Node>) -> (u64, u64) {
         let mut high_tmp = Vec::new();
         let mut low_tmp = Vec::new();
         for (sender, name) in high_pulses {
-            if let Some(node) = &node_map.get(name) {
-                let (high_out, low_out) = node.broadcast(sender, Pulse::High);
-                high_tmp.extend(high_out.iter().map(|x| (name, *x)));
-                low_tmp.extend(low_out.iter().map(|x| (name, *x)));
-            }
+            let node = &node_map[name];
+            let (high_out, low_out) = node.broadcast(sender, Pulse::High);
+            high_tmp.extend(high_out.iter().map(|x| (name, *x)));
+            low_tmp.extend(low_out.iter().map(|x| (name, *x)));
         }
         for (sender, name) in low_pulses {
-            if let Some(node) = &node_map.get(name) {
-                let (high_out, low_out) = node.broadcast(sender, Pulse::Low);
-                high_tmp.extend(high_out.iter().map(|x| (name, *x)));
-                low_tmp.extend(low_out.iter().map(|x| (name, *x)));
-            }
+            let node = &node_map[name];
+            let (high_out, low_out) = node.broadcast(sender, Pulse::Low);
+            high_tmp.extend(high_out.iter().map(|x| (name, *x)));
+            low_tmp.extend(low_out.iter().map(|x| (name, *x)));
         }
         high_count += high_tmp.len() as u64;
         low_count += low_tmp.len() as u64;
-        high_pulses = high_tmp
-            .into_iter()
-            .filter(|(_, n)| *n != "output")
-            .collect();
-        low_pulses = low_tmp
-            .into_iter()
-            .filter(|(_, n)| *n != "output")
-            .collect();
+        high_pulses = high_tmp;
+        low_pulses = low_tmp;
     }
     (high_count, low_count)
 }
@@ -210,8 +225,64 @@ fn compute1(text: &str) -> u64 {
     })
 }
 
-const fn compute2(_text: &str) -> u64 {
-    0
+fn print_node_map(node_map: &HashMap<&str, Node>) {
+    println!("  stateDiagram-v2");
+    println!("    classDef conj fill:#f66");
+    println!("    [*] --> broadcaster");
+    for (name, node) in node_map {
+        for output in &node.output {
+            if let Module::Conjunction(_) = &*node.module.borrow() {
+                println!("    {name}:::conj --> {output}");
+            } else {
+                println!("    {name} --> {output}");
+            }
+        }
+    }
+    println!("    rx --> [*]");
+    println!();
+}
+
+fn compute2(text: &str) -> u64 {
+    let node_map = read_input(text);
+    println!("Initial state:");
+    print_node_map(&node_map);
+    println!("Assuming certain structure, we can simplify");
+    let mut total = Vec::new();
+    for node_name in &node_map["broadcaster"].output {
+        let mut node = &node_map[node_name];
+        let mut number = 0;
+        for i in 0.. {
+            match node
+                .output
+                .iter()
+                .filter(|x| matches!(*node_map[**x].module.borrow(), Module::FlipFlop(_)))
+                .count()
+            {
+                0 => {
+                    number += 1 << i;
+                    break;
+                }
+                1 => {
+                    if node.output.len() > 1 {
+                        number += 1 << i;
+                    }
+                    node = &node_map[node
+                        .output
+                        .iter()
+                        .find(|x| matches!(*node_map[*x].module.borrow(), Module::FlipFlop(_)))
+                        .unwrap()];
+                }
+                _ => unreachable!(),
+            }
+        }
+        total.push(number);
+    }
+    for n in &total {
+        print!("{n:b} ");
+    }
+    println!();
+    println!("Part 2: {total:?}");
+    total.iter().product()
 }
 
 fn main() {
