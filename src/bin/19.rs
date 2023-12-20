@@ -189,13 +189,13 @@ impl Workflow {
 fn read_workflows(txt: &str) -> HashMap<String, Workflow> {
     let workflow_regex = RegexBuilder::new(
         r"
-      ([[:alpha:]]+)         # workflow name
+        ([[:alpha:]]+)         # workflow name
         \{                     # opening brace
             ([^}]+)            # rules
             ,                  # separator
-        ([[:alpha:]]+)       # destination
+        ([[:alpha:]]+)         # destination
         \}                     # closing brace
-      ",
+        ",
     )
     .ignore_whitespace(true)
     .build()
@@ -205,7 +205,7 @@ fn read_workflows(txt: &str) -> HashMap<String, Workflow> {
             ([xmas])           # rule
             ([><]\d+)          # comparison
             :                  # separator
-            ([[:alpha:]]+)   # destination
+            ([[:alpha:]]+)     # destination
       ",
     )
     .ignore_whitespace(true)
