@@ -76,12 +76,13 @@ A few of the crates I'm using or have used:
 - `grid`: A simple 2D array library
 - `indexmap`: Ordered map
 - `indicatif`: Progress bars
+- `intervalium`/`gcollections`: Interval Set
 - `log`, `env_logger`, `test-log`: logging facilities
 - `num`: Needed `lcm` in a problem.
+- `pest`/`pest_derive`: A PEG parser
 - `rayon` (not actively used): Easy multithreading
 - `regex`: Input parsing via regular expressions
 - `strum`: Powerful enum tools like conversion with strings & iteration over enums
-- `pest`/`pest_derive`: A parser used for day 19.
 
 I added fairly extensive docs to `13` to try `cargo doc`. Other days have some intro text,
 but little in the way of inline docs.
