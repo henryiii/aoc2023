@@ -5,7 +5,7 @@
 
 
 First part is pretty easy, but second part requires a lot of thinking.  Got to
-use RefCell for the first time here.
+use `RefCell` to make a portion of a struct mutable for the first time here.
 */
 
 use std::{
@@ -20,19 +20,9 @@ enum Pulse {
 }
 
 #[derive(Debug)]
-struct FlipFlop {
-    state: bool,
-}
-
-#[derive(Debug)]
-struct Conjunction<'a> {
-    inputs: HashMap<&'a str, Pulse>,
-}
-
-#[derive(Debug)]
 enum Module<'a> {
-    FlipFlop(FlipFlop),
-    Conjunction(Conjunction<'a>),
+    FlipFlop(bool),
+    Conjunction(HashMap<&'a str, Pulse>),
     Broadcaster,
     Output((usize, usize)),
 }
@@ -42,24 +32,16 @@ impl<'a> Module<'a> {
         match *self {
             Module::FlipFlop(ref mut flipflop) => {
                 if pulse == Pulse::Low {
-                    flipflop.state = !flipflop.state;
-                    Some(if flipflop.state {
-                        Pulse::High
-                    } else {
-                        Pulse::Low
-                    })
+                    *flipflop = !*flipflop;
+                    Some(if *flipflop { Pulse::High } else { Pulse::Low })
                 } else {
                     None
                 }
             }
             Module::Conjunction(ref mut conj) => {
-                assert!(
-                    conj.inputs.contains_key(sender),
-                    "{sender} not in {:?}",
-                    conj.inputs
-                );
-                *conj.inputs.get_mut(sender).unwrap() = pulse;
-                Some(if conj.inputs.values().all(|x| *x == Pulse::High) {
+                assert!(conj.contains_key(sender), "{sender} not in {conj:?}");
+                *conj.get_mut(sender).unwrap() = pulse;
+                Some(if conj.values().all(|x| *x == Pulse::High) {
                     Pulse::Low
                 } else {
                     Pulse::High
@@ -79,8 +61,8 @@ impl<'a> Module<'a> {
 
     fn is_reset(&self) -> bool {
         match *self {
-            Module::FlipFlop(ref flipflop) => !flipflop.state,
-            Module::Conjunction(ref conj) => conj.inputs.values().all(|x| *x == Pulse::Low),
+            Module::FlipFlop(ref flipflop) => !flipflop,
+            Module::Conjunction(ref conj) => conj.values().all(|x| *x == Pulse::Low),
             _ => true,
         }
     }
@@ -118,15 +100,13 @@ fn read_input(text: &str) -> HashMap<&str, Node> {
             if let Some(name) = inp.strip_prefix('%') {
                 Node {
                     name,
-                    module: RefCell::new(Module::FlipFlop(FlipFlop { state: false })),
+                    module: RefCell::new(Module::FlipFlop(false)),
                     output,
                 }
             } else if let Some(name) = inp.strip_prefix('&') {
                 Node {
                     name,
-                    module: RefCell::new(Module::Conjunction(Conjunction {
-                        inputs: HashMap::new(),
-                    })),
+                    module: RefCell::new(Module::Conjunction(HashMap::new())),
                     output,
                 }
             } else if inp == "broadcaster" {
@@ -148,7 +128,7 @@ fn read_input(text: &str) -> HashMap<&str, Node> {
     for (name, outp) in name_output {
         if let Some(node) = node_map.get(outp) {
             if let Module::Conjunction(ref mut conj) = *node.module.borrow_mut() {
-                conj.inputs.insert(name, Pulse::Low);
+                conj.insert(name, Pulse::Low);
             }
         }
     }
@@ -324,11 +304,5 @@ broadcaster -> a
     fn test_second() {
         let result = compute1(INPUT2);
         assert_eq!(result, 11687500);
-    }
-
-    #[test]
-    fn test_2_first() {
-        let result = compute2(INPUT);
-        assert_eq!(result, 0);
     }
 }
