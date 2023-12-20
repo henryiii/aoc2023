@@ -6,13 +6,35 @@
 This uses structs and enums to represent the rules and workflows. I'm using
 `intervalium` (provides `interval`) and `gcollections` to properly represent
 intervals (could have been done on day 5 as well).
+
+This was originally implemented with a regex (see history), but now uses an
+actual parser.
 */
 
 use gcollections::ops::{set::Intersection, Cardinality, Difference};
 use interval::{interval_set::ToIntervalSet, IntervalSet};
-use regex::{Regex, RegexBuilder};
+use itertools::Itertools;
+use regex::Regex;
 use std::{collections::HashMap, ops::Index, str::FromStr};
 use strum::EnumString;
+
+mod my_parser {
+    use pest_derive::Parser;
+
+    #[derive(Parser)]
+    #[grammar_inline = r#"
+    eoi         = _{ !ANY }
+    cat         = { "x" | "m" | "a" | "s" }
+    compare     = { ("<" | ">") ~ ASCII_DIGIT+ }
+    ident       = { ASCII_ALPHA_LOWER+ }
+    target      = { ident | "A" | "R" }
+    single_rule = { cat ~ compare ~ ":" ~ target }
+    rules       = { (single_rule ~ ",")+ }
+    line        = { ident ~ "{" ~ rules ~ target ~ "}" }
+    file        = { SOI ~ (line ~ NEWLINE*)* ~ eoi }
+    "#]
+    pub struct MyParser;
+}
 
 #[derive(Debug, EnumString, PartialEq, Eq, Hash, Copy, Clone)]
 #[strum(serialize_all = "lowercase")]
@@ -187,47 +209,30 @@ impl Workflow {
 }
 
 fn read_workflows(txt: &str) -> HashMap<String, Workflow> {
-    let workflow_regex = RegexBuilder::new(
-        r"
-        ([[:alpha:]]+)         # workflow name
-        \{                     # opening brace
-            ([^}]+)            # rules
-            ,                  # separator
-        ([[:alpha:]]+)         # destination
-        \}                     # closing brace
-        ",
-    )
-    .ignore_whitespace(true)
-    .build()
-    .unwrap();
-    let rules_regex = RegexBuilder::new(
-        r"
-            ([xmas])           # rule
-            ([><]\d+)          # comparison
-            :                  # separator
-            ([[:alpha:]]+)     # destination
-      ",
-    )
-    .ignore_whitespace(true)
-    .build()
-    .unwrap();
+    use pest::Parser;
 
-    workflow_regex
-        .captures_iter(txt)
-        .map(|cap| {
-            let (_, [name, rules, dest]) = cap.extract();
-            let rules = rules_regex
-                .captures_iter(rules)
-                .map(|cap| {
-                    let (_, [rule, comp, dest]) = cap.extract();
-                    let cat = Cat::from_str(rule).unwrap();
-                    let compare = comp.parse().unwrap();
-                    let dest = dest.parse().unwrap();
+    let file = my_parser::MyParser::parse(my_parser::Rule::file, txt)
+        .unwrap()
+        .next()
+        .unwrap();
+
+    file.into_inner()
+        .map(|line| {
+            let mut inner = line.into_inner();
+            let ident = inner.next().unwrap().as_str();
+            let single_rule = inner.next().unwrap();
+            let rules: Vec<Rule> = single_rule
+                .into_inner()
+                .map(|rule| {
+                    let (cat, compare, dest) = rule.into_inner().next_tuple().unwrap();
+                    let cat = cat.as_str().parse().unwrap();
+                    let compare = compare.as_str().parse().unwrap();
+                    let dest = dest.as_str().parse().unwrap();
                     Rule { cat, compare, dest }
                 })
                 .collect();
-            let dest = dest.parse().unwrap();
-            (name.to_string(), Workflow { rules, dest })
+            let dest: Destination = inner.next().unwrap().as_str().parse().unwrap();
+            (ident.to_string(), Workflow { rules, dest })
         })
         .collect()
 }

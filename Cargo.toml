@@ -16,6 +16,8 @@ intervallum = "*"
 itertools = "*"
 log = "*"
 num = "*"
+pest = "*"
+pest_derive = "*"
 regex = "*"
 strum = { version = "*", features = ["derive"] }
 test-log = "*"
