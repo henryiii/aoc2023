@@ -64,12 +64,14 @@ Features used in each vary. For example, `05` has an optional progress bar
 (opt-out). Over time, I've been cleaning up the older problems based on what
 I've learned in newer problems, so looking at the history for a file might be
 instructive.  I started using external crates like `itertools` & `derive_more`
-around 10-12 or so, but backported a lot of the cleanups later.
+around 10-12 or so, but backported a lot of the cleanups later. I added a few
+tools for several problems in the aoc2023 crate, but only a small handful use
+it.
 
 A few of the crates I'm using or have used:
 
 - `cached`: Python's `itertools.cache` basically
-- `derive-new`: Powerful `new` creation (supports default, unlike `derive_more`'s `Constructor`.
+- `derive-new`: Powerful `new` creation (supports default, unlike `derive_more`'s `Constructor`).
 - `derive_more`: Adds useful derives not part of the stdlib (like Add)
 - `grid`: A simple 2D array library
 - `indexmap`: Ordered map
@@ -79,5 +81,7 @@ A few of the crates I'm using or have used:
 - `rayon` (not actively used): Easy multithreading
 - `regex`: Input parsing via regular expressions
 - `strum`: Powerful enum tools like conversion with strings & iteration over enums
+- `pest`/`pest_derive`: A parser used for day 19.
 
-I added fairly extensive docs to `13` to try `cargo doc`.
+I added fairly extensive docs to `13` to try `cargo doc`. Other days have some intro text,
+but little in the way of inline docs.
