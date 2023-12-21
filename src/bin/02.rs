@@ -117,7 +117,7 @@ Game 5: 6 red, 1 blue, 3 green; 2 blue, 1 red, 2 green";
     fn test_02() {
         let full_total = INPUT.lines().fold(0, |acc, x| acc + measurements(x).0);
         assert_eq!(full_total, 15);
-        let sum = INPUT.lines().fold(0, |acc, x| accumulator(acc, x));
+        let sum = INPUT.lines().fold(0, accumulator);
         assert_eq!(sum, 8);
     }
 

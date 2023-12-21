@@ -135,6 +135,6 @@ U 2 (#7a21e3)";
     #[test]
     fn test_second() {
         let result = compute_2(INPUT);
-        assert_eq!(result, 952408144115);
+        assert_eq!(result, 952_408_144_115);
     }
 }

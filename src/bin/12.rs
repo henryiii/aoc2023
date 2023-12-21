@@ -120,6 +120,6 @@ mod tests {
         assert_eq!(single_line(lines.next().unwrap(), 5), 1);
         assert_eq!(single_line(lines.next().unwrap(), 5), 16);
         assert_eq!(single_line(lines.next().unwrap(), 5), 2500);
-        assert_eq!(single_line(lines.next().unwrap(), 5), 506250);
+        assert_eq!(single_line(lines.next().unwrap(), 5), 506_250);
     }
 }

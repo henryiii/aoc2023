@@ -365,6 +365,6 @@ hdj{m>838:A,pv}
     #[test]
     fn test_second() {
         let result = compute2(INPUT);
-        assert_eq!(result, 167409079868000);
+        assert_eq!(result, 167_409_079_868_000);
     }
 }

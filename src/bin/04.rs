@@ -95,7 +95,7 @@ Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11";
         assert_eq!(cards[0].winning.len(), 5);
         assert_eq!(cards[0].numbers.len(), 8);
         assert_eq!(cards[0].count_winning(), 4);
-        let score: u32 = cards.iter().map(|x| x.score()).sum();
+        let score: u32 = cards.iter().map(Card::score).sum();
         assert_eq!(score, 13);
         let card_counts = card_count(&cards);
         let count: usize = card_counts.iter().sum();

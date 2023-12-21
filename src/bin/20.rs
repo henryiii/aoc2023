@@ -298,11 +298,11 @@ broadcaster -> a
     #[test]
     fn test_first() {
         let result = compute1(INPUT);
-        assert_eq!(result, 32000000);
+        assert_eq!(result, 32_000_000);
     }
     #[test]
     fn test_second() {
         let result = compute1(INPUT2);
-        assert_eq!(result, 11687500);
+        assert_eq!(result, 11_687_500);
     }
 }

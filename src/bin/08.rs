@@ -166,7 +166,7 @@ XXX = (XXX, XXX)";
     #[test]
     fn test_b() {
         let (directions, nodes) = read(INPUT3);
-        let start_nodes: Vec<_> = nodes.keys().filter(|x| x.ends_with("A")).collect();
+        let start_nodes: Vec<_> = nodes.keys().filter(|x| x.ends_with('A')).collect();
         assert_eq!(start_nodes.len(), 2);
         let count = follow_directions_syml(&directions, &nodes);
         assert_eq!(count, 6);

@@ -121,7 +121,7 @@ mod tests {
 
     #[test]
     fn test_03() {
-        let lines = INPUT.lines().map(|x| x.to_string());
+        let lines = INPUT.lines().map(std::string::ToString::to_string);
         let grid = NumberGrid::from_lines(lines);
         assert_eq!(grid.chars.len(), 6);
         assert_eq!(grid.numbers.len(), 10);
@@ -132,7 +132,7 @@ mod tests {
             grid.chars
         );
         let nums = grid.filtered_numbers();
-        assert_eq!(nums.len(), 8, "Expected 8 numbers, got {:?}", nums);
+        assert_eq!(nums.len(), 8, "Expected 8 numbers, got {nums:?}");
         let vals: Vec<u32> = nums.iter().map(|x| x.3).collect();
         assert!(!vals.contains(&114));
         assert!(!vals.contains(&58));
@@ -141,6 +141,6 @@ mod tests {
         assert_eq!(sum, 4361);
 
         let ratios: u32 = grid.gear_ratios().iter().sum();
-        assert_eq!(ratios, 467835);
+        assert_eq!(ratios, 467_835);
     }
 }

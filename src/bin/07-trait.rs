@@ -215,7 +215,7 @@ QQQJA 483";
 
     #[test]
     fn test_parse() {
-        let lines = INPUT.lines().map(|x| x.to_string());
+        let lines = INPUT.lines().map(std::string::ToString::to_string);
         let mut hands: Vec<Hand<StdCard>> = lines.map(|x| x.parse().unwrap()).collect();
         assert_eq!(hands[0].bid, 765);
         assert_eq!(hands[1].bid, 684);
@@ -235,12 +235,12 @@ QQQJA 483";
             .enumerate()
             .map(|(rank, hand)| (rank as u64 + 1) * hand.bid)
             .sum();
-        assert_eq!(score, 6440)
+        assert_eq!(score, 6440);
     }
 
     #[test]
     fn test_parse_2() {
-        let lines = INPUT.lines().map(|x| x.to_string());
+        let lines = INPUT.lines().map(std::string::ToString::to_string);
         let mut hands: Vec<Hand<JokerCard>> = lines.map(|x| x.parse().unwrap()).collect();
         assert_eq!(hands[0].bid, 765);
         assert_eq!(hands[1].bid, 684);
@@ -260,7 +260,7 @@ QQQJA 483";
             .enumerate()
             .map(|(rank, hand)| (rank as u64 + 1) * hand.bid)
             .sum();
-        assert_eq!(score, 5905)
+        assert_eq!(score, 5905);
     }
 
     #[test]
