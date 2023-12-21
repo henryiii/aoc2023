@@ -3,6 +3,12 @@
 
 <https://adventofcode.com/2023/day/21>
 
+Part 1 was pretty easy, just avoiding mistakes was tricky. I basically just
+do a convolution map [0 1 0; 1 0 1; 0 1 0] by hand. Part 2 was tricky, and
+had to look around for a bit of insperation. I basically just expand and
+compute the first couple of board-lenths (131), and then solve; the puzzle
+boards are all clear around the diagonals and edges, so each expansion adds
+the same amount (partially squared) to the total.
 */
 
 use grid::Grid;
