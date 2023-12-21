@@ -120,8 +120,8 @@ mod tests {
 
     #[test]
     fn on_each_simple() {
-        let blocks: Vec<&str> = INPUT.split("\n\n").collect();
-        let mut blocks = blocks.into_iter().map(make_block);
+        let blocks = INPUT.split("\n\n");
+        let mut blocks = blocks.map(make_block);
         assert_eq!(compute_block(&blocks.next().unwrap(), 0).unwrap(), 5);
         assert_eq!(compute_block(&blocks.next().unwrap(), 0).unwrap(), 400);
         assert!(blocks.next().is_none());
@@ -129,8 +129,8 @@ mod tests {
 
     #[test]
     fn on_each_smudged() {
-        let blocks: Vec<&str> = INPUT.split("\n\n").collect();
-        let mut blocks = blocks.into_iter().map(make_block);
+        let blocks = INPUT.split("\n\n");
+        let mut blocks = blocks.map(make_block);
         assert_eq!(
             compute_block_one_smudge(&blocks.next().unwrap()).unwrap(),
             300
