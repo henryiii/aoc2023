@@ -7,6 +7,7 @@
 
 use grid::Grid;
 
+#[must_use]
 fn read(text: &str) -> Grid<i32> {
     text.lines()
         .map(|line| {
@@ -23,25 +24,21 @@ fn read(text: &str) -> Grid<i32> {
         .into()
 }
 
-fn compute1(text: &str, dist: i32) -> usize {
-    let mut grid = read(text);
-    for i in 0..dist {
+#[must_use]
+fn steps(grid: Grid<i32>, dist: usize) -> Grid<i32> {
+    let mut grid = grid;
+    for i in 0..i32::try_from(dist).unwrap() {
         let mut new_grid = grid.clone();
         for y in 0..grid.rows() {
             for x in 0..grid.cols() {
                 if grid[(y, x)] == i {
                     for (dy, dx) in &[(0, 1), (0, -1), (1, 0), (-1, 0)] {
-                        if let Some(v) = grid.get(
-                            i32::try_from(y).unwrap() + dy,
-                            i32::try_from(x).unwrap() + dx,
-                        ) {
+                        let ty = i32::try_from(y).unwrap() + dy;
+                        let tx = i32::try_from(x).unwrap() + dx;
+
+                        if let Some(v) = grid.get(ty, tx) {
                             if *v >= -1 {
-                                *new_grid
-                                    .get_mut(
-                                        i32::try_from(y).unwrap() + dy,
-                                        i32::try_from(x).unwrap() + dx,
-                                    )
-                                    .unwrap() = i + 1;
+                                *new_grid.get_mut(ty, tx).unwrap() = i + 1;
                                 new_grid[(y, x)] = -1;
                             }
                         }
@@ -51,7 +48,15 @@ fn compute1(text: &str, dist: i32) -> usize {
         }
         grid = new_grid;
     }
-    println!("After {dist} steps:");
+    grid
+}
+
+#[must_use]
+fn count_locations(grid: &Grid<i32>) -> usize {
+    grid.iter().filter(|x| **x > 0).count()
+}
+
+fn print_grid(grid: &Grid<i32>) {
     for row in grid.iter_rows() {
         for x in row {
             let c = match x {
@@ -65,12 +70,24 @@ fn compute1(text: &str, dist: i32) -> usize {
         }
         println!();
     }
-    grid.iter().filter(|x| **x > 0).count()
+}
+
+#[must_use]
+fn compute1(text: &str) -> usize {
+    let grid = read(text);
+    let grid = steps(grid, 64);
+    print_grid(&grid);
+    count_locations(&grid)
+}
+
+#[allow(dead_code, unused)]
+const fn compute2(text: &str) -> usize {
+    0
 }
 
 fn main() {
     let text = std::fs::read_to_string("input/21.txt").unwrap();
-    let result = compute1(&text, 64);
+    let result = compute1(&text);
     println!("First = {result}");
 }
 
@@ -93,7 +110,10 @@ mod tests {
 
     #[test]
     fn test_first() {
-        let result = compute1(INPUT, 6);
+        let grid = read(INPUT);
+        let grid = steps(grid, 6);
+        print_grid(&grid);
+        let result = count_locations(&grid);
         assert_eq!(result, 16);
     }
 }
