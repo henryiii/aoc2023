@@ -5,12 +5,22 @@
 
 
 First part is pretty easy, but second part requires a lot of thinking.  Got to
-use `RefCell` to make a portion of a struct mutable for the first time here.
+use `RefCell` to make a portion of a struct mutable for the first time here
+(history).  I reworked the implementation to use a graph, which is a lot cleaner
+(and sadely avoids the `RefCell`). This is a bit more complex than it it needs
+to be (`Node` could be removed) but it allows a Dot graph (see history for
+hand-implemented mermaid graph).
 */
 
-use std::{
-    cell::RefCell,
-    collections::{HashMap, HashSet},
+use core::fmt::{Debug, Formatter};
+use std::collections::{HashMap, HashSet};
+
+use derive_more::Constructor;
+use itertools::Itertools;
+use petgraph::{
+    graph::Graph,
+    graph::NodeIndex,
+    Direction::{Incoming, Outgoing},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -20,17 +30,37 @@ enum Pulse {
 }
 
 #[derive(Debug)]
-enum Module<'a> {
+enum Module {
     FlipFlop(bool),
-    Conjunction(HashMap<&'a str, Pulse>),
+    Conjunction(HashMap<NodeIndex<u32>, Pulse>),
     Broadcaster,
     Output((usize, usize)),
 }
 
-impl<'a> Module<'a> {
-    fn process_pulse(&mut self, pulse: Pulse, sender: &str) -> Option<Pulse> {
+#[derive(Constructor)]
+struct Node {
+    name: String,
+    module: Module,
+}
+
+impl Debug for Node {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let name = &self.name;
+        match &self.module {
+            Module::FlipFlop(val) => write!(f, "{name}: %({val})"),
+            Module::Conjunction(map) => write!(f, "{name}: &({})", map.len()),
+            Module::Broadcaster => write!(f, "{name}"),
+            Module::Output((high, low)) => write!(f, "{name} -> ({high}, {low})"),
+        }
+    }
+}
+
+type ModuleGraph = Graph<Node, ()>;
+
+impl Module {
+    fn process_pulse(&mut self, pulse: Pulse, sender: NodeIndex) -> Option<Pulse> {
         match *self {
-            Module::FlipFlop(ref mut flipflop) => {
+            Self::FlipFlop(ref mut flipflop) => {
                 if pulse == Pulse::Low {
                     *flipflop = !*flipflop;
                     Some(if *flipflop { Pulse::High } else { Pulse::Low })
@@ -38,17 +68,16 @@ impl<'a> Module<'a> {
                     None
                 }
             }
-            Module::Conjunction(ref mut conj) => {
-                assert!(conj.contains_key(sender), "{sender} not in {conj:?}");
-                *conj.get_mut(sender).unwrap() = pulse;
+            Self::Conjunction(ref mut conj) => {
+                *conj.get_mut(&sender).unwrap() = pulse;
                 Some(if conj.values().all(|x| *x == Pulse::High) {
                     Pulse::Low
                 } else {
                     Pulse::High
                 })
             }
-            Module::Broadcaster => Some(pulse),
-            Module::Output(ref mut output) => {
+            Self::Broadcaster => Some(pulse),
+            Self::Output(ref mut output) => {
                 if pulse == Pulse::High {
                     output.0 += 1;
                 } else {
@@ -61,135 +90,130 @@ impl<'a> Module<'a> {
 
     fn is_reset(&self) -> bool {
         match *self {
-            Module::FlipFlop(ref flipflop) => !flipflop,
-            Module::Conjunction(ref conj) => conj.values().all(|x| *x == Pulse::Low),
+            Self::FlipFlop(ref flipflop) => !flipflop,
+            Self::Conjunction(ref conj) => conj.values().all(|x| *x == Pulse::Low),
             _ => true,
         }
     }
 }
 
-#[derive(Debug)]
-struct Node<'a> {
-    name: &'a str,
-    module: RefCell<Module<'a>>,
-    output: Vec<&'a str>,
-}
-
-impl<'a> Node<'a> {
-    fn broadcast(&self, sender: &str, pulse: Pulse) -> (Vec<&str>, Vec<&str>) {
-        let send = self.module.borrow_mut().process_pulse(pulse, sender);
-        log::debug!(
-            "{sender} -{pulse:?}- -> {} (sending {send:?} to output {:?})",
-            self.name,
-            self.output
-        );
-        match send {
-            None => (Vec::new(), Vec::new()),
-            Some(Pulse::High) => (self.output.clone(), Vec::new()),
-            Some(Pulse::Low) => (Vec::new(), self.output.clone()),
-        }
-    }
-}
-
-fn read_input(text: &str) -> HashMap<&str, Node> {
-    let mut node_map: HashMap<&str, Node> = text
+fn read_input(text: &str) -> ModuleGraph {
+    let mut graph = ModuleGraph::new();
+    let info: Vec<(&str, Vec<&str>)> = text
         .lines()
         .map(|line| {
             let (inp, output) = line.split_once(" -> ").unwrap();
             let output = output.split(", ").collect();
-            if let Some(name) = inp.strip_prefix('%') {
-                Node {
-                    name,
-                    module: RefCell::new(Module::FlipFlop(false)),
-                    output,
-                }
-            } else if let Some(name) = inp.strip_prefix('&') {
-                Node {
-                    name,
-                    module: RefCell::new(Module::Conjunction(HashMap::new())),
-                    output,
-                }
-            } else if inp == "broadcaster" {
-                Node {
-                    name: inp,
-                    module: RefCell::new(Module::Broadcaster),
-                    output,
-                }
-            } else {
-                panic!("Unknown input: {inp}");
-            }
+            (inp, output)
         })
-        .map(|n| (n.name, n))
         .collect();
-    let name_output: Vec<(_, _)> = node_map
+
+    let all_output_nodes: HashSet<&str> = info.iter().flat_map(|(_, n)| n.clone()).collect();
+    let flip_flop_nodes: HashSet<&str> = info
         .iter()
-        .flat_map(|(name, node)| node.output.iter().map(move |x| (*name, *x)))
+        .filter_map(|(n, _)| n.strip_prefix('%'))
         .collect();
-    for (name, outp) in name_output {
-        if let Some(node) = node_map.get(outp) {
-            if let Module::Conjunction(ref mut conj) = *node.module.borrow_mut() {
-                conj.insert(name, Pulse::Low);
-            }
+    let conjunction_nodes: HashSet<&str> = info
+        .iter()
+        .filter_map(|(n, _)| n.strip_prefix('&'))
+        .collect();
+    let in_nodes = HashSet::from([info.iter().find(|(x, _)| *x == "broadcaster").unwrap().0]);
+    let all_input_nodes = &(&flip_flop_nodes | &conjunction_nodes) | &in_nodes;
+    let output_only_nodes = &all_output_nodes - &all_input_nodes;
+
+    // Temporary map of strings to indexes
+    let mut node_map = HashMap::new();
+
+    for node in flip_flop_nodes {
+        let inode = graph.add_node(Node::new(node.to_string(), Module::FlipFlop(false)));
+        node_map.insert(node, inode);
+    }
+    for node in conjunction_nodes {
+        let inode = graph.add_node(Node::new(
+            node.to_string(),
+            Module::Conjunction(HashMap::new()),
+        ));
+        node_map.insert(node, inode);
+    }
+    for node in in_nodes {
+        let inode = graph.add_node(Node::new(node.to_string(), Module::Broadcaster));
+        node_map.insert(node, inode);
+    }
+    for node in output_only_nodes {
+        let inode = graph.add_node(Node::new(node.to_string(), Module::Output((0, 0))));
+        node_map.insert(node, inode);
+    }
+
+    // Add edges
+    for (inp, output) in info {
+        let inp = inp
+            .strip_prefix('%')
+            .unwrap_or_else(|| inp.strip_prefix('&').unwrap_or(inp));
+        let in_node = node_map[inp];
+        for outp in output {
+            let out_node = node_map[outp];
+            graph.add_edge(in_node, out_node, ());
         }
     }
-    let all_output_nodes: HashSet<&str> = node_map
-        .values()
-        .flat_map(|n| n.output.iter().copied())
-        .collect();
-    let all_input_nodes: HashSet<&str> = node_map.keys().copied().collect();
-    let output_only_nodes = all_output_nodes.difference(&all_input_nodes);
-    for name in output_only_nodes {
-        node_map.insert(
-            name,
-            Node {
-                name,
-                module: RefCell::new(Module::Output((0, 0))),
-                output: Vec::new(),
-            },
-        );
+
+    // Set up Conj nodes
+    for node in graph.node_indices() {
+        let module = &graph[node].module;
+        let mut edges: Vec<NodeIndex> = Vec::new();
+        if let Module::Conjunction { .. } = module {
+            edges = graph.neighbors_directed(node, Incoming).collect();
+        }
+        if !edges.is_empty() {
+            let module = &mut graph[node].module;
+            *module = Module::Conjunction(edges.iter().map(|k| (*k, Pulse::Low)).collect());
+        }
     }
-    node_map
+
+    graph
 }
 
-fn compute_press(node_map: &HashMap<&str, Node>) -> (u64, u64) {
+fn compute_press(node_graph: &mut ModuleGraph) -> (u64, u64) {
+    type PulseTuple = (Pulse, NodeIndex, NodeIndex);
+
+    let (broadcast,) = node_graph.externals(Incoming).collect_tuple().unwrap();
     let mut high_count = 0;
     let mut low_count = 1;
-    let mut high_pulses = Vec::new();
-    let mut low_pulses = vec![("button", "broadcaster")];
-    while !high_pulses.is_empty() || !low_pulses.is_empty() {
-        let mut high_tmp = Vec::new();
-        let mut low_tmp = Vec::new();
-        for (sender, name) in high_pulses {
-            let node = &node_map[name];
-            let (high_out, low_out) = node.broadcast(sender, Pulse::High);
-            high_tmp.extend(high_out.iter().map(|x| (name, *x)));
-            low_tmp.extend(low_out.iter().map(|x| (name, *x)));
-        }
-        for (sender, name) in low_pulses {
-            let node = &node_map[name];
-            let (high_out, low_out) = node.broadcast(sender, Pulse::Low);
-            high_tmp.extend(high_out.iter().map(|x| (name, *x)));
-            low_tmp.extend(low_out.iter().map(|x| (name, *x)));
-        }
+    let mut pulses: Vec<PulseTuple> = vec![(Pulse::Low, broadcast, broadcast)];
+    while !pulses.is_empty() {
+        let tmp_pulses: Vec<PulseTuple> = pulses
+            .iter()
+            .flat_map(|(pulse, sender, current)| {
+                let node = &mut node_graph[*current].module;
+                let send = node.process_pulse(*pulse, *sender);
+                send.map_or_else(Vec::new, |new_pulse| {
+                    node_graph
+                        .neighbors_directed(*current, Outgoing)
+                        .map(|x| (new_pulse, *current, x))
+                        .collect::<Vec<_>>()
+                })
+            })
+            .collect();
+        let (high_tmp, low_tmp): (Vec<PulseTuple>, Vec<PulseTuple>) = tmp_pulses
+            .iter()
+            .partition(|(pulse, _, _)| *pulse == Pulse::High);
         high_count += high_tmp.len() as u64;
         low_count += low_tmp.len() as u64;
-        high_pulses = high_tmp;
-        low_pulses = low_tmp;
+        pulses = tmp_pulses;
     }
     (high_count, low_count)
 }
 
-fn measure_cycle(node_map: &HashMap<&str, Node>, len: usize) -> (Option<u64>, u64, u64) {
+fn measure_cycle(node_graph: &mut ModuleGraph, len: usize) -> (Option<u64>, u64, u64) {
     let mut high_count = 0;
     let mut low_count = 0;
     let mut cycles = 0;
     for _ in 0..len {
-        let (high, low) = compute_press(node_map);
+        let (high, low) = compute_press(node_graph);
         log::debug!("Loop {cycles}");
         high_count += high;
         low_count += low;
         cycles += 1;
-        if node_map.values().all(|n| n.module.borrow().is_reset()) {
+        if node_graph.node_weights().all(|x| x.module.is_reset()) {
             return (Some(cycles), high_count, low_count);
         }
     }
@@ -197,60 +221,49 @@ fn measure_cycle(node_map: &HashMap<&str, Node>, len: usize) -> (Option<u64>, u6
 }
 
 fn compute1(text: &str) -> u64 {
-    let node_map = read_input(text);
-    let (cycles, high, low) = measure_cycle(&node_map, 1000);
+    let mut node_map = read_input(text);
+    let (cycles, high, low) = measure_cycle(&mut node_map, 1000);
     println!("cycles: {cycles:?}, high: {high}, low: {low}");
     cycles.map_or(high * low, |cycles| {
         high * 1000 * low * 1000 / (cycles * cycles)
     })
 }
 
-fn print_node_map(node_map: &HashMap<&str, Node>) {
-    println!("  stateDiagram-v2");
-    println!("    classDef conj fill:#f66");
-    println!("    [*] --> broadcaster");
-    for (name, node) in node_map {
-        for output in &node.output {
-            if let Module::Conjunction(_) = &*node.module.borrow() {
-                println!("    {name}:::conj --> {output}");
-            } else {
-                println!("    {name} --> {output}");
-            }
-        }
-    }
-    println!("    rx --> [*]");
-    println!();
+fn print_node_map(node_graph: &ModuleGraph) {
+    use petgraph::dot::{Config, Dot};
+    println!(
+        "{:?}",
+        Dot::with_config(&node_graph, &[Config::EdgeNoLabel])
+    );
 }
 
 fn compute2(text: &str) -> u64 {
-    let node_map = read_input(text);
-    println!("Initial state:");
-    print_node_map(&node_map);
+    let node_graph = read_input(text);
     println!("Assuming certain structure, we can simplify");
+
+    let (broadcast,) = node_graph.externals(Incoming).collect_tuple().unwrap();
     let mut total = Vec::new();
-    for node_name in &node_map["broadcaster"].output {
-        let mut node = &node_map[node_name];
+
+    for node_idx in node_graph.neighbors_directed(broadcast, Outgoing) {
+        let mut node = node_idx;
         let mut number = 0;
         for i in 0.. {
-            match node
-                .output
+            let children: Vec<NodeIndex> = node_graph.neighbors_directed(node, Outgoing).collect();
+            let flip_flops: Vec<NodeIndex> = children
                 .iter()
-                .filter(|x| matches!(*node_map[**x].module.borrow(), Module::FlipFlop(_)))
-                .count()
-            {
+                .filter(|x| matches!(node_graph[**x].module, Module::FlipFlop { .. }))
+                .copied()
+                .collect();
+            match flip_flops.len() {
                 0 => {
                     number += 1 << i;
                     break;
                 }
                 1 => {
-                    if node.output.len() > 1 {
+                    if children.len() > 1 {
                         number += 1 << i;
                     }
-                    node = &node_map[node
-                        .output
-                        .iter()
-                        .find(|x| matches!(*node_map[*x].module.borrow(), Module::FlipFlop(_)))
-                        .unwrap()];
+                    node = flip_flops[0];
                 }
                 _ => unreachable!(),
             }
@@ -268,6 +281,12 @@ fn compute2(text: &str) -> u64 {
 fn main() {
     env_logger::init();
     let text = std::fs::read_to_string("input/20.txt").unwrap();
+    let node_map = read_input(&text);
+    println!("DOT graph:");
+    println!();
+    print_node_map(&node_map);
+    println!();
+
     let result = compute1(&text);
     println!("First = {result}");
 
@@ -300,6 +319,7 @@ broadcaster -> a
         let result = compute1(INPUT);
         assert_eq!(result, 32_000_000);
     }
+
     #[test]
     fn test_second() {
         let result = compute1(INPUT2);
