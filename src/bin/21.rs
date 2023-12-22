@@ -10,7 +10,7 @@ compute the first couple of board-lenths (131), and then solve; the puzzle
 boards are all clear around the diagonals and edges, so each expansion adds
 the same amount (partially squared) to the total.
 
-This was rewritten to aboid copying the mask and to avoid grid copies too.  It
+This was rewritten to avoid copying the mask and to avoid grid copies too.  It
 is much, much faster than the original version, and supports arbitrary numbers of
 steps.
 */
