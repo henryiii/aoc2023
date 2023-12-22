@@ -21,6 +21,8 @@ pest_derive = "*"
 petgraph = "*"
 regex = "*"
 strum = { version = "*", features = ["derive"] }
+
+[dev-dependencies]
 test-log = "*"
 
 [features]
