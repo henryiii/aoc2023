@@ -16,11 +16,15 @@ Use:
 
 ```bash
 cargo fmt
-cargo clippy
+cargo clippy --all
 ```
 
-You should have Rust 1.74+ to use the `Cargo.toml` config for clippy.
+You should have Rust 1.74+ to use the `Cargo.toml` config for clippy. If you want
+to auto-fix anything, you can:
 
+```bash
+cargo clippy --fix --allow-dirty --allow-staged
+```
 ## Tests
 
 Use:
@@ -29,7 +33,7 @@ Use:
 cargo test
 ```
 
-Useful flags include `-- --nocapture`.
+Useful flags include `-- --nocapture` and `--bin <NUMBER>` for just one set of tests.
 
 ## Running
 
@@ -72,11 +76,11 @@ A few of the crates I'm using or have used:
 
 - `cached`: Python's `itertools.cache` basically
 - `derive-new`: Powerful `new` creation (supports default, unlike `derive_more`'s `Constructor`).
-- `derive_more`: Adds useful derives not part of the stdlib (like Add)
+- `derive_more`: Adds useful derives not part of the stdlib (like `Add`)
 - `grid`: A simple 2D array library
 - `indexmap`: Ordered map
 - `indicatif`: Progress bars
-- `intervalium`/`gcollections`: Interval Set
+- `intervalium`/`gcollections`: `IntervalSet`
 - `log`, `env_logger`, `test-log`: logging facilities
 - `num`: Needed `lcm` in a problem.
 - `pest`/`pest_derive`: A PEG parser
