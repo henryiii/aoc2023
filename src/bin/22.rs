@@ -1,134 +1,103 @@
 /*!
-# 2023 Day X - ...
+# 2023 Day 22 - 3D falling blocks
 
-<https://adventofcode.com/2023/day/X>
+<https://adventofcode.com/2023/day/22>
+
+First iteration used intervallum, but I reworked this for a cleaner approach and
+a custom interval class. I wanted sorting by lower edges and an easy way to get
+the minimum bound. Intervallum for some reason doesn't have public access to
+`::new()` or `::low()`. Ideally I also wanted to be able to shift an interval, too.
 
 */
 
 use core::fmt::{Debug, Formatter};
-use core::ops::{Add, Sub, SubAssign};
-use gcollections::ops::{Intersection, IsEmpty};
-use interval::{interval::ToInterval, Interval};
+use core::ops::{AddAssign, SubAssign};
 use itertools::Itertools;
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-struct Corner {
-    z: usize,
-    y: usize,
-    x: usize,
+#[derive(Clone, PartialEq, Eq, PartialOrd, Ord, Copy)]
+struct Interval {
+    low: usize,
+    high: usize,
+}
+
+impl Interval {
+    fn new(a: usize, b: usize) -> Self {
+        Self {
+            low: a.min(b),
+            high: a.max(b),
+        }
+    }
+
+    const fn intersects(self, rhs: &Self) -> bool {
+        self.low > rhs.high || self.high < rhs.low
+    }
+}
+
+impl Debug for Interval {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        if self.low == self.high {
+            write!(f, "{}", self.low)
+        } else {
+            write!(f, "{}-{}", self.low, self.high)
+        }
+    }
+}
+
+impl AddAssign<usize> for Interval {
+    fn add_assign(&mut self, rhs: usize) {
+        self.low += rhs;
+        self.high += rhs;
+    }
+}
+
+impl SubAssign<usize> for Interval {
+    fn sub_assign(&mut self, rhs: usize) {
+        self.low -= rhs;
+        self.high -= rhs;
+    }
 }
 
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
 struct Block {
-    low: Corner,
-    high: Corner,
+    z: Interval,
+    y: Interval,
+    x: Interval,
 }
 
 impl Debug for Block {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        let x = if self.low.x == self.high.x {
-            format!("{}", self.low.x)
-        } else {
-            format!("{}-{}", self.low.x, self.high.x)
-        };
-        let y = if self.low.y == self.high.y {
-            format!("{}", self.low.y)
-        } else {
-            format!("{}-{}", self.low.y, self.high.y)
-        };
-        let z = if self.low.z == self.high.z {
-            format!("{}", self.low.z)
-        } else {
-            format!("{}-{}", self.low.z, self.high.z)
-        };
-        write!(f, "({x}, {y}, {z})")
-    }
-}
-
-impl Add<usize> for Block {
-    type Output = Self;
-
-    fn add(mut self, rhs: usize) -> Self::Output {
-        self.low.z += rhs;
-        self.high.z += rhs;
-        self
-    }
-}
-
-impl Sub<usize> for Block {
-    type Output = Self;
-
-    fn sub(mut self, rhs: usize) -> Self::Output {
-        self.low.z -= rhs;
-        self.high.z -= rhs;
-        self
-    }
-}
-
-impl SubAssign<usize> for Block {
-    fn sub_assign(&mut self, rhs: usize) {
-        self.low.z -= rhs;
-        self.high.z -= rhs;
+        write!(f, "({:?}, {:?}, {:?})", self.x, self.y, self.z)
     }
 }
 
 impl Block {
     fn new(corner_1: (usize, usize, usize), corner_2: (usize, usize, usize)) -> Self {
         Self {
-            low: Corner {
-                z: corner_1.2.min(corner_2.2),
-                y: corner_1.1.min(corner_2.1),
-                x: corner_1.0.min(corner_2.0),
-            },
-            high: Corner {
-                z: corner_1.2.max(corner_2.2),
-                y: corner_1.1.max(corner_2.1),
-                x: corner_1.0.max(corner_2.0),
-            },
+            x: Interval::new(corner_1.0, corner_2.0),
+            y: Interval::new(corner_1.1, corner_2.1),
+            z: Interval::new(corner_1.2, corner_2.2),
         }
     }
 
-    fn x_interval(&self) -> Interval<usize> {
-        (self.low.x, self.high.x).to_interval()
+    const fn overlaps_xy(&self, block: &Self) -> bool {
+        !self.x.intersects(&block.x) && !self.y.intersects(&block.y)
     }
 
-    fn y_interval(&self) -> Interval<usize> {
-        (self.low.y, self.high.y).to_interval()
+    const fn overlaps_xyz(&self, block: &Self) -> bool {
+        self.overlaps_xy(block) && !self.z.intersects(&block.z)
     }
 
-    fn z_interval(&self) -> Interval<usize> {
-        (self.low.z, self.high.z).to_interval()
-    }
-
-    fn overlaps_xy(&self, block: &Self) -> bool {
-        !self
-            .x_interval()
-            .intersection(&block.x_interval())
-            .is_empty()
-            && !self
-                .y_interval()
-                .intersection(&block.y_interval())
-                .is_empty()
-    }
-
-    fn overlaps_xyz(&self, block: &Self) -> bool {
-        self.overlaps_xy(block)
-            && !self
-                .z_interval()
-                .intersection(&block.z_interval())
-                .is_empty()
-    }
-
-    fn high_point(&self, block: &Self) -> Option<usize> {
+    const fn high_point(&self, block: &Self) -> Option<usize> {
         if self.overlaps_xy(block) {
-            Some(self.high.z)
+            Some(self.z.high)
         } else {
             None
         }
     }
 
     fn get_blocks_above<'a>(&self, blocks: &'a [Self]) -> Vec<&'a Self> {
-        let one_up = self.clone() + 1;
+        let mut one_up = self.clone();
+        one_up.z += 1;
         blocks
             .iter()
             .filter(|x| *x != self && one_up.overlaps_xyz(x))
@@ -136,7 +105,8 @@ impl Block {
     }
 
     fn count_supports(&self, blocks: &[Self]) -> usize {
-        let one_down = self.clone() - 1;
+        let mut one_down = self.clone();
+        one_down.z -= 1;
         blocks
             .iter()
             .filter(|x| *x != self)
@@ -146,7 +116,7 @@ impl Block {
 }
 
 fn lower_blocks(blocks: &mut [Block]) {
-    blocks[0] -= blocks[0].low.z - 1;
+    blocks[0].z -= blocks[0].z.low - 1;
     for i in 1..blocks.len() {
         let (blocks_below, blocks_above) = blocks.split_at_mut(i);
         let block = &mut blocks_above[0];
@@ -155,27 +125,8 @@ fn lower_blocks(blocks: &mut [Block]) {
             .filter_map(|x| Some(x.high_point(block)? + 1))
             .max()
             .unwrap_or(1);
-        *block -= block.low.z - level;
+        block.z -= block.z.low - level;
     }
-}
-
-fn read(text: &str) -> Vec<Block> {
-    text.lines()
-        .map(|line| {
-            let (a, b) = line.split_once('~').unwrap();
-            let corner_1: (usize, usize, usize) = a
-                .split(',')
-                .map(|x| x.parse().unwrap())
-                .collect_tuple()
-                .unwrap();
-            let corner_2: (usize, usize, usize) = b
-                .split(',')
-                .map(|x| x.parse().unwrap())
-                .collect_tuple()
-                .unwrap();
-            Block::new(corner_1, corner_2)
-        })
-        .collect()
 }
 
 fn removeable_blocks(blocks: &[Block]) -> Vec<&Block> {
@@ -215,6 +166,25 @@ fn compute2(text: &str) -> usize {
                 .count()
         })
         .sum()
+}
+
+fn read(text: &str) -> Vec<Block> {
+    text.lines()
+        .map(|line| {
+            let (a, b) = line.split_once('~').unwrap();
+            let corner_1: (usize, usize, usize) = a
+                .split(',')
+                .map(|x| x.parse().unwrap())
+                .collect_tuple()
+                .unwrap();
+            let corner_2: (usize, usize, usize) = b
+                .split(',')
+                .map(|x| x.parse().unwrap())
+                .collect_tuple()
+                .unwrap();
+            Block::new(corner_1, corner_2)
+        })
+        .collect()
 }
 
 fn main() {
