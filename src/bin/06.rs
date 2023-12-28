@@ -1,5 +1,6 @@
 /*!
-# 2023 Day 6 - Races
+# 2023 Day 6: Wait For It
+## Races
 
 <https://adventofcode.com/2023/day/6>
 

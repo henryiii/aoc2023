@@ -1,8 +1,8 @@
 /*!
-# 2023 Day 8: Maze
+# 2023 Day 8: Haunted Wasteland
+## Maze
 
 <https://adventofcode.com/2023/day/8>
-
 
 This is a maze. For some reason, part two has a weird structure in the data that
 I finally discovered and exploited; otherwise, the solution is much harder. I'm

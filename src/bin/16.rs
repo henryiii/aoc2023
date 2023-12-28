@@ -1,5 +1,6 @@
 /*!
-# 2023 Day 16 - Beams and mirrors
+# 2023 Day 16: The Floor Will Be Lava
+## Beams and mirrors
 
 <https://adventofcode.com/2023/day/16>
 

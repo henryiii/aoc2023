@@ -1,5 +1,6 @@
 /*!
-# 2023 Day 18 - Digging a border
+# 2023 Day 18: Lavaduct Lagoon
+## Digging a border
 
 <https://adventofcode.com/2023/day/18>
 

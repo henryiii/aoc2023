@@ -1,5 +1,6 @@
 /*!
-# 2023 Day 17 - Minimizing the path
+# 2023 Day 17: Clumsy Crucible
+## Minimizing the path
 
 <https://adventofcode.com/2023/day/17>
 

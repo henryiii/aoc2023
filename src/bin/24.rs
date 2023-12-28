@@ -1,5 +1,6 @@
 /*!
-# 2023 Day 24 - Trajectories
+# 2023 Day 24: Never Tell Me The Odds
+## Trajectories
 
 <https://adventofcode.com/2023/day/24>
 

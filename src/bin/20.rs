@@ -1,5 +1,6 @@
 /*!
-# 2023 Day 20 - Binary node network
+# 2023 Day 20: Pulse Propagation
+## Binary node network
 
 <https://adventofcode.com/2023/day/20>
 

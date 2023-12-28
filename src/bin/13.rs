@@ -1,5 +1,6 @@
 /*!
-# 2023 Day 13: Mirrors
+# 2023 Day 13: Point of Incidence
+## Mirrors
 
 <https://adventofcode.com/2023/day/13>
 

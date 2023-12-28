@@ -1,5 +1,6 @@
 /*!
-# 2023 Day 10: Maps
+# 2023 Day 10: Pipe Maze
+## Maps
 
 <https://adventofcode.com/2023/day/10>
 

@@ -1,5 +1,6 @@
 /*!
-# 2023 Day 22 - 3D falling blocks
+# 2023 Day 22: Sand Slabs
+## 3D falling blocks
 
 <https://adventofcode.com/2023/day/22>
 

@@ -1,5 +1,6 @@
 /*!
-# 2023 Day 7 - Camel Cards (trait version)
+# 2023 Day 7: Camel Cards
+## Poker-like cards (trait version)
 
 <https://adventofcode.com/2023/day/7>
 

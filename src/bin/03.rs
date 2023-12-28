@@ -1,5 +1,6 @@
 /*!
-# 2023 Day 3 - Number grid
+# 2023 Day 3: Gear Ratios
+## Number grid
 
 <https://adventofcode.com/2023/day/3>
 

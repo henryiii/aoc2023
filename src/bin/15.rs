@@ -1,5 +1,6 @@
 /*!
-# 2023 Day 15 - HASH and HASHMAP
+# 2023 Day 15: Lens Library
+## HASH and HASHMAP
 
 <https://adventofcode.com/2023/day/15>
 

@@ -1,5 +1,6 @@
 /*!
-# 2023 Day 11 - Expanding galaxies
+# 2023 Day 11: Cosmic Expansion
+## Expanding galaxies
 
 <https://adventofcode.com/2023/day/11>
 

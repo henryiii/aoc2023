@@ -1,5 +1,5 @@
 /*!
-# 2023 Day 25 - Snowverload
+# 2023 Day 25: Snowverload
 ## Cutting connections
 
 <https://adventofcode.com/2023/day/25>

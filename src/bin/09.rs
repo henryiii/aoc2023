@@ -1,5 +1,6 @@
 /*!
-# 2023 Day 9: Number Sequence
+# 2023 Day 9: Mirage Maintenance
+## Number Sequence
 
 <https://adventofcode.com/2023/day/9>
 

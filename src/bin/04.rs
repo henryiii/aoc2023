@@ -1,5 +1,6 @@
 /*!
-# 2023 Day 4 - Winning cards
+# 2023 Day 4: Scratchcards
+## Winning cards
 
 <https://adventofcode.com/2023/day/4>
 

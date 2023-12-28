@@ -1,7 +1,8 @@
 #!/usr/bin/env cargo -Zscript
 
 /*!
-# 2023 Day 1 - Number line
+# 2023 Day 1: Trebuchet?!
+## Number line (part 2)
 
 <https://adventofcode.com/2023/day/1>
 

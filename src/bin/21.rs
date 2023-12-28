@@ -1,5 +1,6 @@
 /*!
-# 2023 Day 21 - Garden maps
+# 2023 Day 21: Step Counter
+## Garden maps
 
 <https://adventofcode.com/2023/day/21>
 

@@ -1,5 +1,6 @@
 /*!
-# 2023 Day 12 - Missing information
+# 2023 Day 12: Hot Springs
+## Missing information
 
 <https://adventofcode.com/2023/day/12>
 

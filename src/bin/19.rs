@@ -1,5 +1,6 @@
 /*!
-# 2023 Day 19 - Command queues
+# 2023 Day 19: Aplenty
+## Command queues
 
 <https://adventofcode.com/2023/day/19>
 
