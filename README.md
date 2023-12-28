@@ -84,9 +84,15 @@ A few of the crates I'm using or have used:
 - `log`, `env_logger`, `test-log`: logging facilities
 - `num`: Needed `lcm` in a problem.
 - `pest`/`pest_derive`: A PEG parser
+- `petgraph` / `rustworkx-core`: Graph tools, similar to networkx for Python
 - `rayon` (not actively used): Easy multithreading
 - `regex`: Input parsing via regular expressions
 - `strum`: Powerful enum tools like conversion with strings & iteration over enums
 
 I added fairly extensive docs to `13` to try `cargo doc`. Other days have some intro text,
 but little in the way of inline docs.
+
+More links:
+
+- [Solution megathreads](https://www.reddit.com/r/adventofcode/search?q=flair_name%3A%22SOLUTION%20MEGATHREAD%22&restrict_sr=1)
+- [Rust fast solutions](https://github.com/kcaffrey/aoc2023) [(Reddit)](https://www.reddit.com/r/adventofcode/s/FqpybvRYhk)
