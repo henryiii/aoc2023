@@ -6,7 +6,7 @@
 This is currently a fairly simple brute-force solution using petgraph. I was
 able to do part one on my phone in Python, but wasn't willing to wait out the
 brute force solution there, but here it's 10 mins or so. Condensing the graph
-should make this noticably faster, I think.
+should make this noticeably faster, I think.
 
 Part 2 is just part 1 again but replacing the directional chars with dots.
 
