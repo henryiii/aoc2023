@@ -7,7 +7,7 @@
 This is currently a fairly simple brute-force solution using petgraph. I was
 able to do part one on my phone in Python, but wasn't willing to wait out the
 brute force solution there, but here it's 10 mins or so. Condensing the graph
-should make this noticeably faster, I think.
+(see history for old version) made this much, much faster.
 
 Part 2 is just part 1 again but replacing the directional chars with dots.
 
@@ -54,6 +54,7 @@ print(sorted((len(p)-1 for p in paths), reverse=True))
 */
 
 use grid::Grid;
+use itertools::Itertools;
 use petgraph::algo::all_simple_paths;
 use petgraph::graph::Graph;
 
@@ -126,19 +127,64 @@ fn make_graph_directed(grid: &Grid<char>) -> Graph<(usize, usize), usize> {
     graph
 }
 
-fn compute1(text: &str) -> usize {
-    let grid = read_grid(text);
-    let graph = make_graph_directed(&grid);
+fn simplify_graph(mut graph: Graph<(usize, usize), usize>) -> Graph<(usize, usize), usize> {
+    'main: loop {
+        for node in graph.node_indices() {
+            if graph.neighbors_undirected(node).unique().count() == 2 {
+                let (first, second) = graph
+                    .neighbors_undirected(node)
+                    .unique()
+                    .collect_tuple()
+                    .unwrap();
+                for (a, b) in [(first, second), (second, first)] {
+                    let edges = graph
+                        .edges_connecting(a, node)
+                        .chain(graph.edges_connecting(node, b));
+                    let num_edges = edges.clone().count();
+                    let new_weight = edges.map(|x| x.weight()).sum();
+                    if num_edges > 1 {
+                        graph.add_edge(a, b, new_weight);
+                    }
+                }
+                graph.remove_node(node);
+                continue 'main;
+            }
+        }
+        return graph;
+    }
+}
+
+fn longest_path_length(graph: &Graph<(usize, usize), usize>, grid: &Grid<char>) -> usize {
     let from = graph.node_indices().find(|n| graph[*n].0 == 0).unwrap();
     let to = graph
         .node_indices()
         .find(|n| graph[*n].0 == grid.rows() - 1)
         .unwrap();
     let paths: Vec<_> = all_simple_paths(&graph, from, to, 0, None)
-        .map(|x: Vec<_>| x.len() - 1)
+        .map(|x: Vec<_>| {
+            x.iter()
+                .skip(1)
+                .fold((0, &from), |acc, y| {
+                    (
+                        acc.0
+                            + graph
+                                .edge_weight(graph.find_edge(*acc.1, *y).unwrap())
+                                .unwrap(),
+                        y,
+                    )
+                })
+                .0
+        })
         .collect();
-    println!("{paths:?}");
     *paths.iter().max().unwrap()
+}
+
+fn compute1(text: &str) -> usize {
+    let grid = read_grid(text);
+    let graph = make_graph_directed(&grid);
+    let graph = simplify_graph(graph);
+    print_graph(&graph);
+    longest_path_length(&graph, &grid)
 }
 
 fn compute2(text: &str) -> usize {
@@ -149,21 +195,14 @@ fn compute2(text: &str) -> usize {
         }
     }
     let graph = make_graph_directed(&grid);
-    let from = graph.node_indices().find(|n| graph[*n].0 == 0).unwrap();
-    let to = graph
-        .node_indices()
-        .find(|n| graph[*n].0 == grid.rows() - 1)
-        .unwrap();
-    let paths: Vec<_> = all_simple_paths(&graph, from, to, 0, None)
-        .map(|x: Vec<_>| x.len() - 1)
-        .collect();
-    *paths.iter().max().unwrap()
+    let graph = simplify_graph(graph);
+    print_graph(&graph);
+    longest_path_length(&graph, &grid)
 }
 
-#[cfg(test)]
-fn print_graph(graph: &Graph<(usize, usize), usize>) {
-    use petgraph::dot::{Config, Dot};
-    println!("{:?}", Dot::with_config(&graph, &[Config::EdgeNoLabel]));
+fn print_graph<T: core::fmt::Debug>(graph: &Graph<T, usize>) {
+    use petgraph::dot::Dot;
+    print!("{:?}", Dot::with_config(&graph, &[]));
 }
 
 fn main() {
