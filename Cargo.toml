@@ -20,6 +20,7 @@ pest = "*"
 pest_derive = "*"
 petgraph = "*"
 regex = "*"
+rustworkx-core = "*"
 strum = { version = "*", features = ["derive"] }
 
 [dev-dependencies]
