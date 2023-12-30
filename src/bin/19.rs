@@ -239,7 +239,9 @@ fn read_workflows(txt: &str) -> HashMap<String, Workflow> {
 }
 
 fn read_parts(txt: &str) -> Vec<Part> {
-    let part_regex = Regex::new(r"\{x=(\d+),m=(\d+),a=(\d+),s=(\d+)\}").unwrap();
+    let part_regex =
+        Regex::new(r"\{x=([[:digit:]]+),m=([[:digit:]]+),a=([[:digit:]]+),s=([[:digit:]]+)\}")
+            .unwrap();
     part_regex
         .captures_iter(txt)
         .map(|cap| {

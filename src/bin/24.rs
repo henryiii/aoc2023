@@ -72,8 +72,8 @@ for pxi, pyi, pzi, dxi, dyi, dzi in vals[:3]:
     eqs.append((pxi-px)*(dy-dyi)-(pyi-py)*(dx-dxi))
     eqs.append((pyi-py)*(dz-dzi)-(pzi-pz)*(dy-dyi))
 
-and = sympy.solve(eqs)
-print(and)
+answer = sympy.solve(eqs)
+print(answer)
 ```
 */
 #![allow(clippy::many_single_char_names, clippy::cast_precision_loss)]

@@ -4,9 +4,10 @@
 
 <https://adventofcode.com/2023/day/16>
 
-The first version was a bit messy. This version adds a trait to the grid that
-adds `checked_get` which returns an `Option<&T>`` given a `Position``, with isize
-coords. Once/if this gets added to the `grid`` crate, this can be removed.
+The first version was a bit messy. That version added a trait to the grid that
+adds `checked_get` which returns an `Option<&T>`` given a `Position``, with
+isize coords. This was added to the `grid`` crate directly with .get, so this
+workaround was removed.
 
 It also makes `Direction` support being used like a bitflag, so that the `HashMap`
 in the original version is avoided.

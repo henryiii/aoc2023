@@ -2,26 +2,30 @@
 name = "aoc2023"
 version = "0.1.0"
 edition = "2021"
+publish = false
 
 [dependencies]
 cached = "*"
-derive-new = "*"
-derive_more = "*"
-env_logger = "*"
+derive-new = {default-features = false}
+derive_more = {default-features = false, features=["constructor", "add"]}
+env_logger = {default-features = false, features=["humantime", "auto-color"]}
 gcollections = "*"
 grid = "*"
-indexmap = "*"
+indexmap = {default-features = false}
 indicatif = {version = "*", optional=true}
 intervallum = "*"
 itertools = "*"
 log = "*"
-num = "*"
+num = {default-features = false}
 pest = "*"
 pest_derive = "*"
-petgraph = "*"
-regex = "*"
+petgraph = {default-features = false}
+regex = {default-features = false}
 rustworkx-core = "*"
 strum = { version = "*", features = ["derive"] }
+
+[lib]
+doctest = false
 
 [dev-dependencies]
 test-log = "*"

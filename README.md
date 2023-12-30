@@ -25,6 +25,12 @@ to auto-fix anything, you can:
 ```bash
 cargo clippy --fix --allow-dirty --allow-staged
 ```
+
+I also looked for removable features using
+[unused-features](https://crates.io/crates/cargo-unused-features), both to
+speed up compilation and it helped removed a small dependence on unicode in
+regex.
+
 ## Tests
 
 Use:
@@ -34,6 +40,9 @@ cargo test
 ```
 
 Useful flags include `-- --nocapture` and `--bin <NUMBER>` for just one set of tests.
+
+If you have `cargo-nextest` (say, from `brew install cargo-nextest`), then
+`cargo nextest run` also works.
 
 ## Running
 
@@ -88,6 +97,8 @@ A few of the crates I'm using or have used:
 - `rayon` (not actively used): Easy multithreading
 - `regex`: Input parsing via regular expressions
 - `strum`: Powerful enum tools like conversion with strings & iteration over enums
+
+Also see [Blessed.rs](https://blessed.rs), a curated list of good Rust libraries.
 
 I added fairly extensive docs to `13` to try `cargo doc`. Other days have some intro text,
 but little in the way of inline docs.
