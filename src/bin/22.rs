@@ -9,6 +9,44 @@ a custom interval class. I wanted sorting by lower edges and an easy way to get
 the minimum bound. Intervallum for some reason doesn't have public access to
 `::new()` or `::low()`. Ideally I also wanted to be able to shift an interval, too.
 
+Plotting code for Blender:
+
+```python
+import bpy
+import bmesh
+from mathutils import Matrix
+import numpy as np
+
+
+TXT = """\
+1,0,1~1,2,1
+0,0,2~2,0,2
+0,2,3~2,2,3
+0,0,4~0,2,4
+2,0,5~2,2,5
+0,1,6~2,1,6
+1,1,8~1,1,9"""
+
+def add_object(bm, start, end):
+    scale = np.abs(start - end) + 1
+    matrix = Matrix.LocRotScale((start + end) / 2, None, scale)
+    bmesh.ops.create_cube(bm, size=1.0, matrix=matrix)
+
+
+bm = bmesh.new()
+
+for line in TXT.splitlines():
+    ax, ay, az, bx, by, bz = map(float, line.replace("~", ",").split(","))
+    add_object(bm, np.array((ax, ay, az)), np.array((bx, by, bz)))
+
+me = bpy.data.meshes.new("Mesh")
+bm.to_mesh(me)
+bm.free()
+
+obj = bpy.data.objects.new("Object", me)
+bpy.context.collection.objects.link(obj)
+```
+
 */
 
 use core::fmt::{Debug, Formatter};

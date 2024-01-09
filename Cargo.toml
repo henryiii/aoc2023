@@ -6,21 +6,21 @@ publish = false
 
 [dependencies]
 cached = "*"
-derive-new = {default-features = false}
-derive_more = {default-features = false, features=["constructor", "add"]}
-env_logger = {default-features = false, features=["humantime", "auto-color"]}
+derive-new = {version="*", default-features = false}
+derive_more = {version="*", default-features = false, features=["constructor", "add"]}
+env_logger = {version="*", default-features = false, features=["humantime", "auto-color"]}
 gcollections = "*"
 grid = "*"
-indexmap = {default-features = false}
+indexmap = {version="*", default-features = false}
 indicatif = {version = "*", optional=true}
 intervallum = "*"
 itertools = "*"
 log = "*"
-num = {default-features = false}
+num = {version="*", default-features = false}
 pest = "*"
 pest_derive = "*"
-petgraph = {default-features = false}
-regex = {default-features = false}
+petgraph = {version="*", default-features = false}
+regex = {version="*", default-features = false}
 rustworkx-core = "*"
 strum = { version = "*", features = ["derive"] }
 
