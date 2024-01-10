@@ -168,7 +168,7 @@ fn lower_blocks(blocks: &mut [Block]) {
     }
 }
 
-fn removeable_blocks(blocks: &[Block]) -> Vec<&Block> {
+fn removable_blocks(blocks: &[Block]) -> Vec<&Block> {
     blocks
         .iter()
         .filter(|x| {
@@ -185,7 +185,7 @@ fn compute1(text: &str) -> usize {
     let mut blocks = read(text);
     blocks.sort();
     lower_blocks(&mut blocks);
-    removeable_blocks(&blocks).len()
+    removable_blocks(&blocks).len()
 }
 
 fn compute2(text: &str) -> usize {
