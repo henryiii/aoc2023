@@ -35,8 +35,7 @@ fn cmp_line(conditions: String, ops: Vec<usize>) -> usize {
             .chars()
             .skip(space)
             .take(ops[0])
-            .enumerate()
-            .all(|(_, c)| c != '.')
+            .all(|c| c != '.')
             && conditions.chars().nth(space + ops[0]).unwrap_or('.') != '#';
         if conditions.chars().skip(space + ops[0]).count() < 2 {
             count += usize::from(valid);

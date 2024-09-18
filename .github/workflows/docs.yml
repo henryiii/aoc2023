@@ -28,6 +28,7 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
       - uses: actions/checkout@v4
+      - uses: actions-rust-lang/setup-rust-toolchain@v1
       - name: Build docs
         run: cargo doc --no-deps --workspace
       - run: echo "<meta http-equiv=\"refresh\" content=\"0; url=aoc2023\">" > target/doc/index.html
