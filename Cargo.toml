@@ -3,6 +3,7 @@ name = "aoc2023"
 version = "0.1.0"
 edition = "2021"
 publish = false
+rust-version = "1.78"
 
 [dependencies]
 cached = "*"

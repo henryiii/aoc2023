@@ -53,7 +53,7 @@ struct Cursor {
 
 impl Cursor {
     #[must_use]
-    fn step(&self, dir: Direction) -> Self {
+    const fn step(&self, dir: Direction) -> Self {
         match dir {
             Direction::Up => Self::new(self.y - 1, self.x),
             Direction::Down => Self::new(self.y + 1, self.x),
