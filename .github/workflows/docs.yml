@@ -27,7 +27,7 @@ jobs:
       - name: Setup Pages
         id: pages
         uses: actions/configure-pages@v5
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions-rust-lang/setup-rust-toolchain@v1
       - name: Build docs
         run: cargo doc --no-deps --workspace
@@ -35,7 +35,7 @@ jobs:
       - name: Remove file with bad permissions
         run: rm target/doc/.lock
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v4
         with:
           path: ./target/doc
       - name: Deploy to GitHub Pages
