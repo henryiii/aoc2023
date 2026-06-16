@@ -10,6 +10,30 @@ this is fast enough and simpler.
 
 use grid::Grid;
 
+/// A mirror line, tagged by axis so row and column results can't be confused.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Mirror {
+    Row(usize),
+    Column(usize),
+}
+
+impl Mirror {
+    /// The reflection index within its own axis.
+    const fn line(self) -> usize {
+        match self {
+            Self::Row(v) | Self::Column(v) => v,
+        }
+    }
+
+    /// The puzzle score: rows count for 100, columns for 1.
+    const fn score(self) -> usize {
+        match self {
+            Self::Row(v) => v * 100,
+            Self::Column(v) => v,
+        }
+    }
+}
+
 /// Make a block of bools from a string.
 fn make_block(block: &str) -> Grid<bool> {
     block
@@ -33,26 +57,25 @@ fn compare_mirror_y(block: &Grid<bool>, val: usize) -> bool {
     true
 }
 
-/// Find the mirror line. Set skip=0 to not skip any values. Otherwise, skip
-/// this value if present.
-fn compute_block(block: &Grid<bool>, skip: usize) -> Option<usize> {
+/// Find the mirror line, optionally skipping one known result (the unsmudged
+/// line in part 2).
+fn compute_block(block: &Grid<bool>, skip: Option<Mirror>) -> Option<Mirror> {
     (1..block.rows())
-        .filter(|&x| x * 100 != skip)
-        .find(|&y| compare_mirror_y(block, y))
-        .map(|x| x * 100)
+        .map(Mirror::Row)
+        .find(|&m| Some(m) != skip && compare_mirror_y(block, m.line()))
         .or_else(|| {
             let mut copied = block.clone();
             copied.transpose();
             (1..copied.rows())
-                .filter(|&x| x != skip)
-                .find(|&x| compare_mirror_y(&copied, x))
+                .map(Mirror::Column)
+                .find(|&m| Some(m) != skip && compare_mirror_y(&copied, m.line()))
         })
 }
 
 /// This computes smudges and checks each block. It skips the non-smudged
 /// result.
-fn compute_block_one_smudge(block: &Grid<bool>) -> Option<usize> {
-    let skip = compute_block(block, 0).unwrap();
+fn compute_block_one_smudge(block: &Grid<bool>) -> Option<Mirror> {
+    let skip = compute_block(block, None);
     block
         .indexed_iter()
         .map(|((y, x), _)| {
@@ -67,14 +90,14 @@ fn compute_block_one_smudge(block: &Grid<bool>) -> Option<usize> {
 /// Compute all the first part.
 fn compute(text: &str) -> usize {
     text.split("\n\n")
-        .map(|s| compute_block(&make_block(s), 0).expect(s))
+        .map(|s| compute_block(&make_block(s), None).expect(s).score())
         .sum()
 }
 
 /// Compute all the second part.
 fn compute_one_smudge(text: &str) -> usize {
     text.split("\n\n")
-        .map(|s| compute_block_one_smudge(&make_block(s)).expect(s))
+        .map(|s| compute_block_one_smudge(&make_block(s)).expect(s).score())
         .sum()
 }
 
@@ -123,8 +146,18 @@ mod tests {
     fn on_each_simple() {
         let blocks = INPUT.split("\n\n");
         let mut blocks = blocks.map(make_block);
-        assert_eq!(compute_block(&blocks.next().unwrap(), 0).unwrap(), 5);
-        assert_eq!(compute_block(&blocks.next().unwrap(), 0).unwrap(), 400);
+        assert_eq!(
+            compute_block(&blocks.next().unwrap(), None)
+                .unwrap()
+                .score(),
+            5
+        );
+        assert_eq!(
+            compute_block(&blocks.next().unwrap(), None)
+                .unwrap()
+                .score(),
+            400
+        );
         assert!(blocks.next().is_none());
     }
 
@@ -133,11 +166,15 @@ mod tests {
         let blocks = INPUT.split("\n\n");
         let mut blocks = blocks.map(make_block);
         assert_eq!(
-            compute_block_one_smudge(&blocks.next().unwrap()).unwrap(),
+            compute_block_one_smudge(&blocks.next().unwrap())
+                .unwrap()
+                .score(),
             300
         );
         assert_eq!(
-            compute_block_one_smudge(&blocks.next().unwrap()).unwrap(),
+            compute_block_one_smudge(&blocks.next().unwrap())
+                .unwrap()
+                .score(),
             100
         );
         assert!(blocks.next().is_none());

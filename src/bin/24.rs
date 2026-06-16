@@ -40,7 +40,7 @@ def intersect_in(vals, low, high):
 
 vals = read('24test.txt')
 seen = list(intersect_in(vals, 7, 27))
-print(len(seens))
+print(len(seen))
 
 vals = read('24data.txt')
 seen = list(intersect_in(vals, 200000000000000, 400000000000000))
@@ -233,14 +233,17 @@ fn find_velocity(vals: &[Line]) -> (i64, i64, i64) {
     (*dx, *dy, *dz)
 }
 
-const fn find_position(vals: &[Line], dx: i64, dy: i64, dz: i64) -> (i64, i64, i64) {
+fn find_position(vals: &[Line], dx: i64, dy: i64, dz: i64) -> (i64, i64, i64) {
     let a = &vals[0];
     let b = &vals[1];
     let ax = dx - a.d.x;
     let ay = dy - a.d.y;
     let bx = dx - b.d.x;
     let by = dy - b.d.y;
-    let t = (bx * (b.p.y - a.p.y) - by * (b.p.x - a.p.x)) / (ax * by - bx * ay);
+    let det = ax * by - bx * ay;
+    let num = bx * (b.p.y - a.p.y) - by * (b.p.x - a.p.x);
+    assert_eq!(num % det, 0, "rock launch time is not integral");
+    let t = num / det;
     (
         a.p.x + t * (a.d.x - dx),
         a.p.y + t * (a.d.y - dy),

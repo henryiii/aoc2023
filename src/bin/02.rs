@@ -59,12 +59,9 @@ impl FromStr for Meas {
 }
 
 fn measurements(line: &str) -> (u32, Vec<Meas>) {
-    let split: Vec<&str> = line.split(':').collect();
-    assert_eq!(split.len(), 2);
-    let game_str = split[0];
+    let (game_str, results) = line.split_once(':').unwrap();
     let game_number: u32 = game_str.strip_prefix("Game ").unwrap().parse().unwrap();
-    let results = split[1].split(';');
-    let meas = results.map(|x| x.parse().unwrap()).collect();
+    let meas = results.split(';').map(|x| x.parse().unwrap()).collect();
     (game_number, meas)
 }
 

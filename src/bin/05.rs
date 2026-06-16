@@ -92,13 +92,13 @@ impl AllMappers {
 }
 
 fn read<'a>(lines: impl Iterator<Item = &'a str>) -> (Vec<u64>, AllMappers) {
-    let mut lines = lines.into_iter();
+    let mut lines = lines;
     let seeds: Vec<u64> = lines
         .next()
         .unwrap()
-        .split(':')
-        .next_back()
+        .split_once(':')
         .unwrap()
+        .1
         .split_whitespace()
         .map(|x| x.parse().unwrap())
         .collect();

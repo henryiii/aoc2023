@@ -116,7 +116,7 @@ fn count<T: Card>(cards: &[T]) -> HashMap<T, u64> {
 impl<T: Card> Hand<T> {
     fn level(&self) -> u64 {
         let card_counts = count(&self.cards);
-        let mut counts: Vec<_> = card_counts.clone().into_values().collect();
+        let mut counts: Vec<_> = card_counts.values().copied().collect();
         counts.sort_unstable();
         counts.reverse();
 
@@ -152,7 +152,7 @@ impl<T: Card> Hand<T> {
 
 impl<T: Card> Ord for Hand<T> {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
-        (self.level(), self.cards, self.bid).cmp(&(other.level(), other.cards, other.bid))
+        (self.level(), self.cards).cmp(&(other.level(), other.cards))
     }
 }
 

@@ -12,8 +12,8 @@ This was originally implemented with a regex (see history), but now uses an
 actual parser.
 */
 
-use gcollections::ops::{set::Intersection, Cardinality, Difference};
-use interval::{interval_set::ToIntervalSet, IntervalSet};
+use gcollections::ops::{Cardinality, Difference, set::Intersection};
+use interval::{IntervalSet, interval_set::ToIntervalSet};
 use itertools::Itertools;
 use regex::Regex;
 use std::{collections::HashMap, ops::Index, str::FromStr};

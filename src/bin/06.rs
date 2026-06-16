@@ -28,9 +28,9 @@ impl Race {
 
 fn get_arr(string: &str) -> Vec<u64> {
     string
-        .split(':')
-        .next_back()
+        .split_once(':')
         .unwrap()
+        .1
         .trim()
         .split_ascii_whitespace()
         .map(|x| x.parse().unwrap())
