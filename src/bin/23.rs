@@ -53,6 +53,8 @@ print(sorted((len(p)-1 for p in paths), reverse=True))
 
 */
 
+use std::collections::HashMap;
+
 use grid::Grid;
 use itertools::Itertools;
 use petgraph::algo::all_simple_paths;
@@ -77,6 +79,7 @@ fn make_graph_directed(grid: &Grid<char>) -> Graph<(usize, usize), usize> {
             }
         })
         .collect::<Vec<_>>();
+    let node_at: HashMap<(usize, usize), _> = nodes.iter().map(|&n| (graph[n], n)).collect();
     let dirs = [(0, 1), (1, 0)];
     for node in &nodes {
         let (y, x) = graph[*node];
@@ -87,20 +90,17 @@ fn make_graph_directed(grid: &Grid<char>) -> Graph<(usize, usize), usize> {
                 i32::try_from(x).unwrap() + dx,
             );
             if let Some(next) = grid.get(ny, nx) {
+                let coord = (usize::try_from(ny).unwrap(), usize::try_from(nx).unwrap());
+                let Some(&other) = node_at.get(&coord) else {
+                    continue;
+                };
                 match (current, dy, dx, next) {
                     ('.', _, _, '.')
                     | ('>', 0, 1, _)
                     | (_, 0, 1, '>')
                     | ('v', 1, 0, _)
                     | (_, 1, 0, 'v') => {
-                        let other = nodes
-                            .iter()
-                            .find(|n| {
-                                graph[**n]
-                                    == (usize::try_from(ny).unwrap(), usize::try_from(nx).unwrap())
-                            })
-                            .unwrap();
-                        graph.add_edge(*node, *other, 1);
+                        graph.add_edge(*node, other, 1);
                     }
                     _ => {}
                 }
@@ -110,14 +110,7 @@ fn make_graph_directed(grid: &Grid<char>) -> Graph<(usize, usize), usize> {
                     | ('<', 0, 1, _)
                     | (_, 1, 0, '^')
                     | ('^', 1, 0, _) => {
-                        let other = nodes
-                            .iter()
-                            .find(|n| {
-                                graph[**n]
-                                    == (usize::try_from(ny).unwrap(), usize::try_from(nx).unwrap())
-                            })
-                            .unwrap();
-                        graph.add_edge(*other, *node, 1);
+                        graph.add_edge(other, *node, 1);
                     }
                     _ => {}
                 }

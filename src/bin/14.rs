@@ -12,6 +12,7 @@ Continuing to enjoy enums with `strum`'s additions.
 */
 
 use grid::Grid;
+use std::collections::HashMap;
 use std::str::FromStr;
 use strum::IntoEnumIterator;
 
@@ -112,15 +113,20 @@ fn compute(text: &str) -> Num {
 
 fn compute_cycles(text: &str, cycles: usize) -> Num {
     let mut grid = read_data(text);
-    let mut cache: Vec<Grid<Map>> = Vec::new();
-    while !cache.contains(&grid) {
-        cache.push(grid.clone());
+    // Map each seen state to its index for O(1) cycle detection; keep the load
+    // at each index so the answer is a direct lookup.
+    let mut seen: HashMap<Grid<Map>, usize> = HashMap::new();
+    let mut loads: Vec<Num> = Vec::new();
+    let cycle_start = loop {
+        if let Some(&start) = seen.get(&grid) {
+            break start;
+        }
+        seen.insert(grid.clone(), loads.len());
+        loads.push(compute_load(&grid));
         tilt_cycle(&mut grid);
-    }
-    let cycle_start = cache.iter().position(|x| *x == grid).unwrap();
-    let cycle_len = cache.len() - cycle_start;
-    grid = cache[(cycles - cycle_start) % cycle_len + cycle_start].clone();
-    compute_load(&grid)
+    };
+    let cycle_len = loads.len() - cycle_start;
+    loads[(cycles - cycle_start) % cycle_len + cycle_start]
 }
 
 fn main() {

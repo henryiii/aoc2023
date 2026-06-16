@@ -15,35 +15,28 @@ use std::vec;
 #[cached]
 fn cmp_line(conditions: String, ops: Vec<usize>) -> usize {
     if ops.is_empty() {
-        let val = conditions.chars().all(|x| x != '#');
-        return usize::from(val);
+        return usize::from(!conditions.contains('#'));
     }
 
-    // This is the maximum consecutive space
+    // The input is ASCII, so byte indexing matches char indexing.
+    let bytes = conditions.as_bytes();
+
+    // The most leading space we can leave before the first group.
     let limit_space: usize = conditions.len() - (ops.iter().sum::<usize>() + ops.len() - 1);
-    let mut count = 0;
-
     let max_space = conditions
-        .chars()
-        .enumerate()
-        .find(|(_, v)| *v == '#')
-        .map_or(conditions.len(), |(i, _)| i);
-    let max_space = max_space.min(limit_space);
+        .find('#')
+        .unwrap_or(conditions.len())
+        .min(limit_space);
 
+    let mut count = 0;
     for space in 0..=max_space {
-        let valid = conditions
-            .chars()
-            .skip(space)
-            .take(ops[0])
-            .all(|c| c != '.')
-            && conditions.chars().nth(space + ops[0]).unwrap_or('.') != '#';
-        if conditions.chars().skip(space + ops[0]).count() < 2 {
+        let end = space + ops[0];
+        let valid = bytes[space..end].iter().all(|&c| c != b'.')
+            && bytes.get(end).copied().unwrap_or(b'.') != b'#';
+        if conditions.len() - end < 2 {
             count += usize::from(valid);
         } else if valid {
-            count += cmp_line(
-                conditions[space + ops[0] + 1..].to_string(),
-                ops[1..].to_vec(),
-            );
+            count += cmp_line(conditions[end + 1..].to_string(), ops[1..].to_vec());
         }
     }
     count
