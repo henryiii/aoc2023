@@ -67,7 +67,7 @@ impl Interval {
         }
     }
 
-    const fn intersects(self, rhs: &Self) -> bool {
+    const fn is_disjoint(self, rhs: &Self) -> bool {
         self.low > rhs.high || self.high < rhs.low
     }
 }
@@ -119,11 +119,11 @@ impl Block {
     }
 
     const fn overlaps_xy(&self, block: &Self) -> bool {
-        !self.x.intersects(&block.x) && !self.y.intersects(&block.y)
+        !self.x.is_disjoint(&block.x) && !self.y.is_disjoint(&block.y)
     }
 
     const fn overlaps_xyz(&self, block: &Self) -> bool {
-        self.overlaps_xy(block) && !self.z.intersects(&block.z)
+        self.overlaps_xy(block) && !self.z.is_disjoint(&block.z)
     }
 
     const fn high_point(&self, block: &Self) -> Option<usize> {

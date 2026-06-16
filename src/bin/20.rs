@@ -222,9 +222,12 @@ fn measure_cycle(node_graph: &mut ModuleGraph, len: usize) -> (Option<u64>, u64,
 fn compute1(text: &str) -> u64 {
     let mut node_map = read_input(text);
     let (cycles, high, low) = measure_cycle(&mut node_map, 1000);
-    println!("cycles: {cycles:?}, high: {high}, low: {low}");
+    log::debug!("cycles: {cycles:?}, high: {high}, low: {low}");
     cycles.map_or(high * low, |cycles| {
-        high * 1000 * low * 1000 / (cycles * cycles)
+        // `high`/`low` cover one reset cycle; scale to 1000 presses.
+        assert_eq!(1000 % cycles, 0, "cycle length must divide 1000");
+        let n = 1000 / cycles;
+        (high * n) * (low * n)
     })
 }
 
