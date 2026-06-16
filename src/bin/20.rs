@@ -19,9 +19,9 @@ use std::collections::{HashMap, HashSet};
 use derive_more::Constructor;
 use itertools::Itertools;
 use petgraph::{
+    Direction::{Incoming, Outgoing},
     graph::Graph,
     graph::NodeIndex,
-    Direction::{Incoming, Outgoing},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -164,11 +164,11 @@ fn main() {
 
     println!("{a2}/2 x^2 +{b2}/2 x + {c} = y");
     println!("x=0, y={c}");
-    println!("x=1, y={}", (a2 + b2) / 2 + c);
-    println!("x=2, y={}", (4 * a2 + 2 * b2) / 2 + c);
+    println!("x=1, y={}", usize::midpoint(a2, b2) + c);
+    println!("x=2, y={}", usize::midpoint(4 * a2, 2 * b2) + c);
     println!(
         "x=202300, y={}",
-        (202_300 * 202_300 * a2 + 202_300 * b2) / 2 + c
+        usize::midpoint(202_300 * 202_300 * a2, 202_300 * b2) + c
     );
 }
 

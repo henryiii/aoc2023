@@ -9,9 +9,7 @@ A few problems use repeated items, so those are provided here.
 
 */
 
-/*/
-This has helpers for 2D problems.
-*/
+/// Helpers for 2D grid problems.
 pub mod grid_helper {
     use core::ops::{Add, Index, IndexMut};
 

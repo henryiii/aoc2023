@@ -40,7 +40,7 @@ def intersect_in(vals, low, high):
 
 vals = read('24test.txt')
 seen = list(intersect_in(vals, 7, 27))
-print(len(seens))
+print(len(seen))
 
 vals = read('24data.txt')
 seen = list(intersect_in(vals, 200000000000000, 400000000000000))
