@@ -23,7 +23,7 @@ impl FromStr for Card {
     type Err = FailedReadError;
 
     fn from_str(line: &str) -> Result<Self, Self::Err> {
-        let data = line.split(':').last().ok_or(FailedReadError)?;
+        let data = line.split(':').next_back().ok_or(FailedReadError)?;
         let mut groups = data.split('|');
         let winning_str = groups.next().ok_or(FailedReadError)?.trim();
         let numbers_str = groups.next().ok_or(FailedReadError)?.trim();
@@ -90,7 +90,7 @@ Card 5: 87 83 26 28 32 | 88 30 70 12 93 22 82 36
 Card 6: 31 18 13 56 72 | 74 77 10 23 35 67 36 11";
 
     #[test]
-    fn test_03() {
+    fn test_04() {
         let cards: Vec<Card> = INPUT.lines().map(|x| x.parse().unwrap()).collect();
         assert_eq!(cards.len(), 6);
         assert_eq!(cards[0].winning.len(), 5);

@@ -17,7 +17,7 @@ fn read(input: &str) -> impl Iterator<Item = Vec<i64>> + '_ {
 
 fn compute_next(data: &[i64]) -> i64 {
     let next_vec: Vec<_> = data.windows(2).map(|x| x[1] - x[0]).collect();
-    let next = if next_vec.iter().sum::<i64>() == 0 {
+    let next = if next_vec.iter().all(|&x| x == 0) {
         0
     } else {
         compute_next(&next_vec)
@@ -27,7 +27,7 @@ fn compute_next(data: &[i64]) -> i64 {
 
 fn compute_previous(data: &[i64]) -> i64 {
     let next_vec: Vec<_> = data.windows(2).map(|x| x[1] - x[0]).collect();
-    let previous = if next_vec.iter().sum::<i64>() == 0 {
+    let previous = if next_vec.iter().all(|&x| x == 0) {
         0
     } else {
         compute_previous(&next_vec)

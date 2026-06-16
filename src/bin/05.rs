@@ -97,7 +97,7 @@ fn read<'a>(lines: impl Iterator<Item = &'a str>) -> (Vec<u64>, AllMappers) {
         .next()
         .unwrap()
         .split(':')
-        .last()
+        .next_back()
         .unwrap()
         .split_whitespace()
         .map(|x| x.parse().unwrap())
@@ -121,7 +121,7 @@ fn read<'a>(lines: impl Iterator<Item = &'a str>) -> (Vec<u64>, AllMappers) {
 
 fn seeds_as_ranges_brute_force(seeds: &[u64]) -> impl Iterator<Item = u64> + '_ {
     let pairs = seeds.iter().step_by(2).zip(seeds.iter().skip(1).step_by(2));
-    let seeds = pairs.map(|(from, len)| (*from..*from + *len));
+    let seeds = pairs.map(|(from, len)| *from..*from + *len);
     seeds.flatten()
 }
 

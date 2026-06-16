@@ -61,7 +61,6 @@ fn follow_directions_syml(directions: &str, nodes: &HashMap<String, (String, Str
         .filter(|x| x.ends_with('A'))
         .map(|x| &x[..])
         .collect();
-    println!("{current_nodes:?}");
     for direction in directions.chars().cycle() {
         match direction {
             'L' => current_nodes.iter_mut().for_each(|x| *x = &nodes[*x].0),

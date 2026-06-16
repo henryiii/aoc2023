@@ -21,7 +21,7 @@ mode (`cargo script`).
 fn number_line(line: &str) -> u32 {
     let mut chars = line.chars().filter_map(|c| c.to_digit(10));
     let start = chars.next().unwrap();
-    let end = chars.last().unwrap_or(start);
+    let end = chars.next_back().unwrap_or(start);
     10 * start + end
 }
 
