@@ -107,7 +107,7 @@ impl Cursor {
 
         let mut valid_dirs = Direction::iter().filter(|dir| {
             log::debug!("{self:?} {dir:?}");
-            self.peek(grid, *dir).map_or(false, |next| {
+            self.peek(grid, *dir).is_some_and(|next| {
                 log::debug!("Checking ({next}, {dir:?})");
                 matches!(
                     (next, dir),
@@ -221,7 +221,7 @@ fn compute_and_print_grid(strs: &[&str]) -> (usize, usize) {
     }
 
     let internal: usize = inside.iter().map(|x| usize::from(*x)).sum();
-    (((count + 1) / 2), internal)
+    (count.div_ceil(2), internal)
 }
 
 fn main() {

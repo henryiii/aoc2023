@@ -146,7 +146,7 @@ fn compute2(text: &str) -> usize {
         ));
         max = max.max(count_energize(
             &grid,
-            &Position::new(i, isize::try_from(grid.rows()).unwrap() - 1),
+            &Position::new(i, isize::try_from(grid.cols()).unwrap() - 1),
             Direction::Left,
         ));
     }
@@ -154,7 +154,7 @@ fn compute2(text: &str) -> usize {
         max = max.max(count_energize(&grid, &Position::new(0, i), Direction::Down));
         max = max.max(count_energize(
             &grid,
-            &Position::new(isize::try_from(grid.cols()).unwrap() - 1, i),
+            &Position::new(isize::try_from(grid.rows()).unwrap() - 1, i),
             Direction::Up,
         ));
     }

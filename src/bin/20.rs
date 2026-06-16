@@ -159,14 +159,12 @@ fn read_input(text: &str) -> ModuleGraph {
 
     // Set up Conj nodes
     for node in graph.node_indices() {
-        let module = &graph[node].module;
-        let mut edges: Vec<NodeIndex> = Vec::new();
-        if let Module::Conjunction { .. } = module {
-            edges = graph.neighbors_directed(node, Incoming).collect();
-        }
-        if !edges.is_empty() {
-            let module = &mut graph[node].module;
-            *module = Module::Conjunction(edges.iter().map(|k| (*k, Pulse::Low)).collect());
+        if let Module::Conjunction(_) = &graph[node].module {
+            let edges = graph
+                .neighbors_directed(node, Incoming)
+                .map(|k| (k, Pulse::Low))
+                .collect();
+            graph[node].module = Module::Conjunction(edges);
         }
     }
 

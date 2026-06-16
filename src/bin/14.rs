@@ -106,7 +106,6 @@ fn tilt_dir(grid: &mut Grid<Map>, dir: Direction) {
 
 fn compute(text: &str) -> Num {
     let mut grid = read_data(text);
-    println!();
     tilt_dir(&mut grid, Direction::North);
     compute_load(&grid)
 }
@@ -114,7 +113,7 @@ fn compute(text: &str) -> Num {
 fn compute_cycles(text: &str, cycles: usize) -> Num {
     let mut grid = read_data(text);
     let mut cache: Vec<Grid<Map>> = Vec::new();
-    while !cache.iter().any(|x| *x == grid) {
+    while !cache.contains(&grid) {
         cache.push(grid.clone());
         tilt_cycle(&mut grid);
     }
