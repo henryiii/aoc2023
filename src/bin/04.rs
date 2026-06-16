@@ -23,7 +23,7 @@ impl FromStr for Card {
     type Err = FailedReadError;
 
     fn from_str(line: &str) -> Result<Self, Self::Err> {
-        let data = line.split(':').next_back().ok_or(FailedReadError)?;
+        let data = line.split_once(':').ok_or(FailedReadError)?.1;
         let mut groups = data.split('|');
         let winning_str = groups.next().ok_or(FailedReadError)?.trim();
         let numbers_str = groups.next().ok_or(FailedReadError)?.trim();

@@ -47,7 +47,11 @@ impl PartialOrd for State {
 
 fn read_grid(text: &str) -> Grid<usize> {
     text.lines()
-        .map(|x| x.chars().map(|x| x.to_string().parse().unwrap()).collect())
+        .map(|x| {
+            x.chars()
+                .map(|x| x.to_digit(10).unwrap() as usize)
+                .collect()
+        })
         .collect::<Vec<_>>()
         .into()
 }
@@ -81,7 +85,7 @@ fn compute_path(grid: &Grid<usize>, min_path: usize, max_path: usize) -> Option<
         if !computed.insert((position, direction, len)) {
             continue;
         }
-        let directions = vec![
+        let directions = [
             direction,
             direction.clockwise(),
             direction.counter_clockwise(),
